@@ -17,8 +17,6 @@ Original Plink options:
 	+ sex check option?
 	+ genome option: check for cryptic relatedness to evaluate paired identity by descent in all samples
 
-From Ben-"All GWAS data are QC'd to SNPs and Samples with >= 98% callrates, MAF>=0.05, HWE>0.001. All related samples removed. Outliers relative to ethnicity identified and removed using PCA and HapMap3 populations"
-
 Split the dataset by chromosome:
 
 for chr in $(seq 1 22); do
@@ -27,6 +25,8 @@ for chr in $(seq 1 22); do
            --recode \
            --out myGwasData.chr$chr ;
 done
+
+./preprocess.sh ./data/ SYounkin_MayoGWAS_09-05-08
 
 ### Pre-Phasing with SHAPEIT
 
@@ -49,6 +49,14 @@ shapeit --input-bed gwas.bed gwas.bim gwas.fam \
         --seed 123456789
         Note also that you cannot reproduce two multi-threaded runs even if you specify the seed.
 
+./prephase.sh ./data/ SYounkin_MayoGWAS_09-05-08 1 2
+./prephase.sh ./data/ SYounkin_MayoGWAS_09-05-08 3 5
+./prephase.sh ./data/ SYounkin_MayoGWAS_09-05-08 6 8
+./prephase.sh ./data/ SYounkin_MayoGWAS_09-05-08 9 12
+./prephase.sh ./data/ SYounkin_MayoGWAS_09-05-08 13 17
+./prephase.sh ./data/ SYounkin_MayoGWAS_09-05-08 18 22
+
+
 ### Imputation with IMPUTE2
 
 Version 2.3.1
@@ -67,6 +75,9 @@ Impute options:
 		–-seed 367946
 		–-allow_large_regions
 		–-filt_rules_l 'eur.maf==0'
+		
 We use the sliding windows approach and make sure that within each 2.5-7MB chucnk we have ~ 200 GWAS Panel SNPs
 
 ### Post-Impute QC with qctool
+
+–qctool -g example.bgen -og subsetted.gen -snp-missing-rate 0.05 -maf 0 1 -info 0.4 1 -hwe 20

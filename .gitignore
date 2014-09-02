@@ -1,3 +1,9 @@
 # Data files #
 ##############
 **/data/
+
+# R project files #
+###################
+**.Rproj**
+**.Rhistory
+
