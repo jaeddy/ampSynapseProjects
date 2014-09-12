@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# specify directories
+# assign inputs
 DATA_DIR="$1"
 GWAS_DATA="$2"
 
