@@ -1,68 +1,54 @@
 #!/bin/sh
 
-# specify directories
-DATA_DIR="$1"
-GWAS_DATA="$2"
+# assign inputs
+GWAS_DATA="$1"
+CHR="$2"
+CHUNK_START=`printf "%.0f" $3`
+CHUNK_END=`printf "%.0f" $4`
 
-cd "$DATA_DIR"
+# directories
+ROOT_DIR=./
+DATA_DIR=${ROOT_DIR}data/
+GWAS_DIR=${DATA_DIR}gwas_results/${GWAS_DATA}.by_chr/
+GENMAP_DIR=${DATA_DIR}haplotypes/
+# GWAS_HAPS_DIR=${GENMAP_DIR}${GWAS_DATA}.phased/
+GWAS_HAPS_DIR=${DATA_DIR}gwas_results/${GWAS_DATA}.phased/
 
-# reference data files
-GWAS_DIR="gwas_results/${GWAS_DATA}.by_chr/"
-PREPHASED_DIR="gwas_results/${GWAS_DATA}.phased/"
-GENMAP_DIR="haplotypes/"
-
+# prefixes and files
 HAP_PREFIX=".integrated_phase1_v3.20101123.snps_indels_svs.genotypes.nosing."
-NUM_FILE="${GWAS_DIR}impute_intervals/num_ints.txt"
-
 
 # create new directory to store results
-RESULTS_DIR="gwas_results/${GWAS_DATA}.imputed/"
+RESULTS_DIR="${DATA_DIR}gwas_results/${GWAS_DATA}.imputed/"
 
 if [ ! -e "$RESULTS_DIR" ]; then
     mkdir "$RESULTS_DIR"
 fi
 
-# impute estimated haplotype files with impute2 and save to results directory
-for CHR in 22; do
-	
-	ESTHAP_FILE="${PREPHASED_DIR}${GWAS_DATA}.chr${CHR}.phased.haps"
-	
-	REFHAP_FILE="${GENMAP_DIR}ALL.chr${CHR}${HAP_PREFIX}haplotypes.gz"
-	LEGEND_FILE="${GENMAP_DIR}ALL.chr${CHR}${HAP_PREFIX}legend.gz"
-	MAP_FILE="${GENMAP_DIR}genetic_map_chr${CHR}_combined_b37.txt"
-	
-	RESULT_FILE="${GWAS_DATA}.chr${CHR}"
-	
-	NUM_INTS=$(awk -v chr=$CHR '$2==chr {print $3}' $NUM_FILE)
-	INTS_FILE="${GWAS_DIR}impute_intervals/chr${CHR}.ints"
-	for INT in 1; do
-		
-		CHUNK_START=$(awk -v i=$INT '$3==i {print $5}' $INTS_FILE)
-	    CHUNK_END=$(awk -v i=$INT '$3==i {print $6}' $INTS_FILE)
-    
-        RESULT_INT="${RESULT_FILE}.pos${CHUNK_START}-${CHUNK_END}.imputed"
-        
-        echo "$REFHAP_FILE"
-        echo "$LEGEND_FILE"
-            
-        impute2 -use_prephased_g \
-            –known_haps_g $ESTHAP_FILE \
-            -h $REFHAP_FILE \
-            -l $LEGEND_FILE \
-            –iter 30 \
-            –burnin 10 \
-            –k 80 \
-            –k_hap 500 \
-            –Ne 20000 \
-            -int $CHUNK_START $CHUNK_END \
-            –seed 367946 \
-            –allow_large_regions \
-            –filt_rules_l 'eur.maf==0' \
-            -o $RESULT_INT ;
-	
-	done
-	
-	mv *.chr${CHR}.*.imputed* "$RESULTS_DIR"
-done
+# executable
+IMPUTE_EXEC=${ROOT_DIR}resources/impute2/impute2
 
-    
+# specify data files
+GWAS_HAPS_FILE=${GWAS_HAPS_DIR}${GWAS_DATA}.chr${CHR}.phased.haps
+HAPS_FILE=${GENMAP_DIR}ALL.chr${CHR}${HAP_PREFIX}haplotypes.gz
+LEGEND_FILE=${GENMAP_DIR}ALL.chr${CHR}${HAP_PREFIX}legend.gz
+GENMAP_FILE=${GENMAP_DIR}genetic_map_chr${CHR}_combined_b37.txt
+
+RESULT_FILE="${GWAS_DATA}.chr${CHR}.pos${CHUNK_START}-${CHUNK_END}.imputed"
+
+# impute estimated haplotype files with impute2 and save to results directory        
+$IMPUTE_EXEC \
+    -use_prephased_g \
+    -m $GENMAP_FILE \
+    -h $HAPS_FILE \
+    -l $LEGEND_FILE \
+    -known_haps_g $GWAS_HAPS_FILE \
+    -iter 30 \
+    -burnin 10 \
+    -k 80 \
+    -k_hap 500 \
+    -Ne 20000 \
+    -int $CHUNK_START $CHUNK_END \
+    -allow_large_regions \
+    -o ./resources/impute2/Example/example.chr22.one.phased.impute2
+
+# mv *.chr${CHR}.*.imputed* "$RESULTS_DIR"
