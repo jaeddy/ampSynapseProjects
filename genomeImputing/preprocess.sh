@@ -2,6 +2,7 @@
 
 # assign inputs
 GWAS_DATA="$1"
+CHR="$2"
 
 # directories
 ROOT_DIR=./
@@ -16,23 +17,21 @@ if [ ! -e "$RESULTS_DIR" ]; then
 fi
 
 # executable
-PLINK_EXEC="${ROOT_DIR}resources/plink/plink"
+PLINK_EXEC=${ROOT_DIR}resources/plink/plink
 
-# data files
+# specify data files
 GWAS_FILE=${GWAS_DIR}${GWAS_DATA}
 
-# reprocess binary files with plink & store in results directory
-for CHR in 22; do
-			
-    $PLINK_EXEC \
-    	--bfile $GWAS_FILE \
-		--chr $CHR \
-        --recode \
-        --maf 0.05 \
-        --geno 0.02 \
-        --hwe 0.001 \
-        --mind 0.02 \
-        --out ${GWAS_DATA}.chr${CHR} ;
-        
-    mv *.chr${CHR}* "$RESULTS_DIR"      
-done
+# reprocess binary files with plink & store in results directory			
+$PLINK_EXEC \
+	--bfile $GWAS_FILE \
+	--chr $CHR \
+	--recode \
+	--maf 0.05 \
+	--geno 0.02 \
+	--hwe 0.001 \
+	--mind 0.02 \
+	--out ${GWAS_DATA}.chr${CHR} ;
+	
+mv *.chr${CHR}* "$RESULTS_DIR"      
+
