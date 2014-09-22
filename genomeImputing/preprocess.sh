@@ -1,26 +1,31 @@
 #!/bin/sh
 
 # assign inputs
-DATA_DIR="$1"
-GWAS_DATA="$2"
+GWAS_DATA="$1"
 
-cd "$DATA_DIR"
-
-# reference data files
-GWAS_DIR="gwas_results/"
+# directories
+ROOT_DIR=./
+DATA_DIR=${ROOT_DIR}data/
+GWAS_DIR=${DATA_DIR}gwas_results/
 
 # create new directory to store results
-RESULTS_DIR="${GWAS_DIR}${GWAS_DATA}.by_chr"
+RESULTS_DIR=${GWAS_DIR}${GWAS_DATA}.by_chr/
 
 if [ ! -e "$RESULTS_DIR" ]; then
     mkdir "$RESULTS_DIR"
 fi
 
+# executable
+PLINK_EXEC="${ROOT_DIR}resources/plink/plink"
+
+# data files
+GWAS_FILE=${GWAS_DIR}${GWAS_DATA}
+
 # reprocess binary files with plink & store in results directory
-for CHR in $(seq 1 22); do
-	GWAS_FILE="${GWAS_DIR}${GWAS_DATA}"
-		
-    plink --bfile $GWAS_FILE \
+for CHR in 22; do
+			
+    $PLINK_EXEC \
+    	--bfile $GWAS_FILE \
 		--chr $CHR \
         --recode \
         --maf 0.05 \
