@@ -35,7 +35,7 @@ LIFTED_SET = set()
 UNLIFTED_SET = set()
 def liftBed(fin, fout, funlifted):
     params = dict()
-    params['LIFTOVER_BIN'] = 'liftOver'
+    params['LIFTOVER_BIN'] = './resources/liftOver'
     params['OLD'] = fin
     params['CHAIN'] = './data/hg18ToHg19.over.chain.gz'
     params['NEW'] = fout
