@@ -21,6 +21,7 @@ PLINK_EXEC=${ROOT_DIR}resources/plink/plink
 
 # specify data files
 GWAS_FILE=${GWAS_DIR}${GWAS_DATA}
+RESULT_FILE=${GWAS_DATA}.chr${CHR}
 
 # reprocess binary files with plink & store in results directory			
 $PLINK_EXEC \
@@ -31,7 +32,7 @@ $PLINK_EXEC \
 	--geno 0.02 \
 	--hwe 0.001 \
 	--mind 0.02 \
-	--out ${GWAS_DATA}.chr${CHR} ;
+	--out $RESULT_FILE ;
 	
 mv *.chr${CHR}* "$RESULTS_DIR"      
 

@@ -9,7 +9,7 @@ CHUNK_END=`printf "%.0f" $4`
 # directories
 ROOT_DIR=./
 DATA_DIR=${ROOT_DIR}data/
-GWAS_DIR=${DATA_DIR}gwas_results/${GWAS_DATA}.by_chr/
+GWAS_DIR=${DATA_DIR}gwas_results/${GWAS_DATA}.b37/
 GENMAP_DIR=${DATA_DIR}haplotypes/
 # GWAS_HAPS_DIR=${GENMAP_DIR}${GWAS_DATA}.phased/
 GWAS_HAPS_DIR=${DATA_DIR}gwas_results/${GWAS_DATA}.phased/
@@ -18,7 +18,7 @@ GWAS_HAPS_DIR=${DATA_DIR}gwas_results/${GWAS_DATA}.phased/
 HAP_PREFIX=".integrated_phase1_v3.20101123.snps_indels_svs.genotypes.nosing."
 
 # create new directory to store results
-RESULTS_DIR="${DATA_DIR}gwas_results/${GWAS_DATA}.imputed/"
+RESULTS_DIR=${DATA_DIR}gwas_results/${GWAS_DATA}.imputed/
 
 if [ ! -e "$RESULTS_DIR" ]; then
     mkdir "$RESULTS_DIR"
