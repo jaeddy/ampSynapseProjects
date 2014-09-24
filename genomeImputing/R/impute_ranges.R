@@ -1,16 +1,19 @@
 library(dplyr)
 
-rootDir <- getwd()
-setwd(paste0("genomeImputing/data/gwas_results/",
-             "SYounkin_MayoGWAS_09-05-08.by_chr/"))
+rootDir <- "./"
+dataDir <- paste0(rootDir, "data/")
 
-if (!file.exists("impute_intervals")) {
-    dir.create("impute_intervals")
+gwasData <- "SYounkin_MayoGWAS_09-05-08"
+gwasDir <- paste0(dataDir, "gwas_results/", gwasData, ".b37/")
+
+resultsDir <- paste0(gwasDir, "impute_intervals/")
+if (!file.exists(resultsDir)) {
+    dir.create(resultsDir)
 }
 
 chrInts <- data.frame()
-for (chr in 1:22) {
-    chrBim <- read.table(paste0("SYounkin_MayoGWAS_09-05-08.chr", chr, ".bim"))
+for (chr in 22) {
+    chrBim <- read.table(paste0(gwasDir, gwasData, ".chr", chr, ".b37.map"))
                          
     nSNPs <- nrow(chrBim)
     nInts <- ceiling(nSNPs / 200)
@@ -27,11 +30,9 @@ for (chr in 1:22) {
                   end = max(V4)) %>%
         mutate(interval = as.numeric(interval))
     
-    write.table(chrBim, paste0("impute_intervals/chr", chr, ".ints"), )
+    write.table(chrBim, paste0(gwasDir, "impute_intervals/chr", chr, ".ints"))
     
     numInts <- nrow(chrBim)
     chrInts <- rbind(chrInts, data.frame(chr = chr, numInts = numInts))
 }
-write.table(chrInts, "impute_intervals/num_ints.txt")
-
-setwd(rootDir)
+write.table(chrInts, paste0(gwasDir, "impute_intervals/num_ints.txt"))
