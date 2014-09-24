@@ -8,7 +8,7 @@ GWAS_DATA=SYounkin_MayoGWAS_09-05-08
 # directories
 ROOT_DIR=./
 DATA_DIR=${ROOT_DIR}data/
-GWAS_DIR=${DATA_DIR}gwas_results/${GWAS_DATA}.by_chr/
+GWAS_DIR=${DATA_DIR}gwas_results/${GWAS_DATA}.b37/
 
 for CHR in 22; do
 
