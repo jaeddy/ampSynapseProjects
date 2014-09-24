@@ -42,8 +42,8 @@ $IMPUTE_EXEC \
     -h $HAPS_FILE \
     -l $LEGEND_FILE \
     -known_haps_g $GWAS_HAPS_FILE \
-    -iter 2 \
-    -burnin 1 \
+    -iter 30 \
+    -burnin 10 \
     -k 80 \
     -k_hap 500 \
     -Ne 20000 \
