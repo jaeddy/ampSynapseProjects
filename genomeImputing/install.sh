@@ -19,6 +19,7 @@ mv plink-1.07-x86_64 plink
 
 # install liftOver
 wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/liftOver
+chmod a+x ./liftOver
 
 # install IMPUTE2
 wget https://mathgen.stats.ox.ac.uk/impute/impute_v2.3.1_x86_64_static.tgz
@@ -26,9 +27,11 @@ tar -zxvf impute_v2.3.1_x86_64_static.tgz
 mv impute_v2.3.1_x86_64_static impute2
 
 # install SHAPEIT
+mkdir shapeit/
+cd shapeit/
 wget https://mathgen.stats.ox.ac.uk/genetics_software/shapeit/shapeit.v2.r790.Ubuntu_12.04.4.static.tar.gz
 tar -zxvf shapeit.v2.r790.Ubuntu_12.04.4.static.tar.gz
-mv shapeit.v2.r790.Ubuntu_12.04.4.static shapeit
+cd ..
 
 # install qctool
 wget http://www.well.ox.ac.uk/~gav/qctool/resources/qctool_v1.4-linux-x86_64.tgz
