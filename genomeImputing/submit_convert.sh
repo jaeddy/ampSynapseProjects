@@ -5,8 +5,8 @@ echo ""
 # assign inputs
 GWAS_DATA=SYounkin_MayoGWAS_09-05-08
 
-for CHR in 22; do
+for CHR in $(seq 1 22); do
                 
-    ./convertbuild.sh $GWAS_DATA $CHR
+    qsub -V -cwd ./convertbuild.sh $GWAS_DATA $CHR
         
 done

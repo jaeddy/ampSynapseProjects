@@ -10,7 +10,7 @@ ROOT_DIR=./
 DATA_DIR=${ROOT_DIR}data/
 GWAS_DIR=${DATA_DIR}gwas_results/${GWAS_DATA}.b37/
 
-for CHR in 22; do
+for CHR in $(seq 1 22); do
 
     NUM_FILE="${GWAS_DIR}impute_intervals/num_ints.txt"
     NUM_INTS=$(awk -v chr=$CHR '$2==chr {print $3}' $NUM_FILE)
@@ -21,7 +21,7 @@ for CHR in 22; do
         CHUNK_START=$(awk -v i=$INT '$3==i {print $5}' $INTS_FILE)
         CHUNK_END=$(awk -v i=$INT '$3==i {print $6}' $INTS_FILE)
                 
-        ./postqc.sh $GWAS_DATA $CHR $CHUNK_START $CHUNK_END
+        qsub -V -cwd ./postqc.sh $GWAS_DATA $CHR $CHUNK_START $CHUNK_END
     
     done
 
