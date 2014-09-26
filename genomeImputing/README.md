@@ -7,6 +7,8 @@ The following analysis is designed to be self-contained within the `genomeImputi
 
 ```
 ./
+|-install.sh
+|-get_data.sh
 |-preprocess.sh
 |-convertbuild.sh
 |-prephase.sh
@@ -21,6 +23,7 @@ The following analysis is designed to be self-contained within the `genomeImputi
     |-gwas_results/
     |-haplotypes/
         |-1000genomes/
+    |-hg18ToHg19.over.chain.gz
 |-resources/
     |-impute2/
         |-impute2
@@ -40,6 +43,27 @@ The following analysis is designed to be self-contained within the `genomeImputi
 Under the `resources` directory, `impute2`, `plink`, `qctool`, and `shapeit` are all command line genomics tools.
 
 Under the `data` directory, `gwas_results` should include PLINK binary-formatted GWAS files (.bed/.bim/.fam). The `haplotypes/1000genomes/` directory should include all relevant 1000 Genomes Project files obtained from [this site](https://mathgen.stats.ox.ac.uk/impute/data_download_1000G_phase1_integrated_SHAPEIT2_9-12-13.html) (see option **ii** - haplotypes with singleton sites removed).
+
+
+### Getting started
+
+The analysis pipeline can be run on any Sun Grid Engine (SGE) environment (e.g., a new or existing AWS AMI) with the following installed:  
+
++ Python (2.7)
++ R (3.0.2 or higher), including the `dplyr` package
++ AWS Command Line Interface (CLI)
+
+Before starting the analysis, the following commands should be run to download all code, download/install binary genomics tools under `resources` and to load the appropriate files under `data`. 
+
+```
+$ git clone https://github.com/jaeddy/ampSynapseProjects
+$ cd genotypeImputing
+$ ./install.sh
+$ ./get_data.sh
+```
+
+All subsequent commands should be executed from within the `genotypeImputing` directory.
+
 
 ### Pre-processing with PLINK
 
@@ -67,6 +91,7 @@ Updated PLINK options:
 --hwe 0.001
 ```
 
+
 ### Converting genome build with liftOver
 
 The following command is used to submit a job with `convertbuild.sh` for each chromosome:
@@ -76,6 +101,7 @@ The following command is used to submit a job with `convertbuild.sh` for each ch
 `convertbuild.sh` is a script wrapped around the `LiftMap.py` Python script<sup>1</sup>. `LiftMap.py`, which calls the `liftOver` tool to convert genotype positions between genome builds. In this case, `LiftMap.py` references the chain file `hg18ToHg19.over.chain.gz` in the `data` directory to convert GWAS call positions from build 36 to build 37 of the human genome.
 
 <sup>1</sup>This script was obtained from the Abecasis Group Wiki (@University of Michigan) page for [LiftOver](http://genome.sph.umich.edu/wiki/LiftOver#Resources).
+
 
 ### Pre-phasing with SHAPEIT
 
