@@ -21,8 +21,8 @@ for CHR in $(seq 1 22); do
         CHUNK_START=$(awk -v i=$INT '$3==i {print $5}' $INTS_FILE)
         CHUNK_END=$(awk -v i=$INT '$3==i {print $6}' $INTS_FILE)
                 
-        qsub -V -cwd ./postqc.sh $GWAS_DATA $CHR $CHUNK_START $CHUNK_END
-    
+        qsub -V -cwd ./postqc.sh $GWAS_DATA $CHR $CHUNK_START $CHUNK_END \
+            -M james.a.eddy@gmail.com
     done
 
 done
