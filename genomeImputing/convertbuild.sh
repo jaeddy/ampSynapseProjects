@@ -24,7 +24,7 @@ RESULT_FILE=${GWAS_DATA}.chr${CHR}.b37
 # http://genome.sph.umich.edu/wiki/LiftOver#Resources
 
 python \
-    ./Python/LiftMap.py \
+    ./python/LiftMap.py \
     -m $MAP_FILE \
     -p $PED_FILE \
     -o $RESULT_FILE ;
