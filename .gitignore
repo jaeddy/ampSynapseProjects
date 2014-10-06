@@ -2,6 +2,7 @@
 ##############
 **/data/
 **/resources/
+**/sgelogs/
 
 # R project files #
 ###################
@@ -9,3 +10,7 @@
 **.Rhistory
 
 .Rproj.user
+
+# PLINK version file #
+######################
+.pversion
