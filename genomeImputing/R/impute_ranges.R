@@ -12,7 +12,7 @@ if (!file.exists(resultsDir)) {
 }
 
 chrInts <- data.frame()
-for (chr in 22) {
+for (chr in 1:22) {
     chrBim <- read.table(paste0(gwasDir, gwasData, ".chr", chr, ".b37.map"))
                          
     nSNPs <- nrow(chrBim)
