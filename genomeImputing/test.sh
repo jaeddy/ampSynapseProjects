@@ -1,33 +1,41 @@
 #!/bin/sh
 
-# ./test.sh ./data/ SYounkin_MayoGWAS_09-05-08
+echo ""
 
-# specify directories
-DATA_DIR="$1"
-GWAS_DATA="$2"
+# assign inputs
+GWAS_DATA=SYounkin_MayoGWAS_09-05-08
 
-cd "$DATA_DIR"
+# directories
+ROOT_DIR=./
+DATA_DIR=${ROOT_DIR}data/
+GWAS_DIR=${DATA_DIR}gwas_results/${GWAS_DATA}.b37/
 
-# reference data files
-GWAS_DIR="gwas_results/${GWAS_DATA}.by_chr/"
+for CHR in 1; do
 
-# impute estimated haplotype files with impute2 and save to results directory
-for CHR in $(seq 1 22); do
-	
-	NUM_FILE="${GWAS_DIR}impute_intervals/num_ints.txt"
-	NUM_INTS=$(awk -v chr=$CHR '$2==chr {print $3}' $NUM_FILE)
-	
-	INTS_FILE="${GWAS_DIR}impute_intervals/chr${CHR}.ints"
-	for INT in $(seq 1 $NUM_INTS); do
-	
-	    START=$(awk -v i=$INT '$3==i {print $5}' $INTS_FILE)
-	    END=$(awk -v i=$INT '$3==i {print $6}' $INTS_FILE)
-		
-		echo "$CHR"
-		echo "$INT"
-		echo "$START"
-		echo "$END"
-		
-	done
+    NUM_FILE="${GWAS_DIR}impute_intervals/num_ints.txt"
+    NUM_INTS=$(awk -v chr=$CHR '$2==chr {print $3}' $NUM_FILE)
+    INTS_FILE="${GWAS_DIR}impute_intervals/chr${CHR}.ints"
+
+    for INT in 1; do
+
+        CHUNK_START=$(awk -v i=$INT '$3==i {print $5}' $INTS_FILE)
+        CHUNK_END=$(awk -v i=$INT '$3==i {print $6}' $INTS_FILE)
+        
+        #PREV_INTS_FILE="${GWAS_DIR}impute_intervals/already_run.txt"
+        PREV_INTS_FILE="${ROOT_DIR}test.txt"        
+        if [ ! -e "$PREV_INTS_FILE" ]; then
+            touch "$PREV_INTS_FILE"
+        fi
+        echo $PREV_INTS_FILE
+        
+        INT_CHECK=chr${CHR}_${CHUNK_START}-${CHUNK_END}
+        echo $INT_CHECK
+        if ! grep -q $INT_CHECK $PREV_INTS_FILE; then
+            echo found
+        else
+            echo not found
+        fi
+    
+    done
+    
 done
-	
