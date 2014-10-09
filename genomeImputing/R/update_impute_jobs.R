@@ -1,5 +1,8 @@
 library(dplyr)
 
+rootDir <- "./"
+dataDir <- paste0(rootDir, "data/")
+
 gwasData <- "SYounkin_MayoGWAS_09-05-08"
 gwasDir <- paste0(dataDir, "gwas_results/", gwasData, ".b37/")
 
