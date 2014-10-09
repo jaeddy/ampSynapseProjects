@@ -21,8 +21,8 @@ for CHR in 1; do
         CHUNK_START=$(awk -v i=$INT '$3==i {print $5}' $INTS_FILE)
         CHUNK_END=$(awk -v i=$INT '$3==i {print $6}' $INTS_FILE)
         
-        #PREV_INTS_FILE="${GWAS_DIR}impute_intervals/already_run.txt"
-        PREV_INTS_FILE="${ROOT_DIR}test.txt"        
+        PREV_INTS_FILE="${GWAS_DIR}impute_intervals/already_run.txt"
+        #PREV_INTS_FILE="${ROOT_DIR}test.txt"        
         if [ ! -e "$PREV_INTS_FILE" ]; then
             touch "$PREV_INTS_FILE"
         fi
@@ -31,9 +31,9 @@ for CHR in 1; do
         INT_CHECK=chr${CHR}_${CHUNK_START}-${CHUNK_END}
         echo $INT_CHECK
         if ! grep -q $INT_CHECK $PREV_INTS_FILE; then
-            echo found
-        else
             echo not found
+        else
+            echo "previously run interval $INT_CHECK"
         fi
     
     done
