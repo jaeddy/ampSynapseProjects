@@ -1,0 +1,64 @@
+PackratFormat: 1.4
+PackratVersion: 0.3.0.103
+RVersion: 3.1.1
+Repos: CRAN=http://cran.rstudio.com,
+    BioCsoft=http://bioconductor.org/packages/2.14/bioc,
+    BioCann=http://bioconductor.org/packages/2.14/data/annotation,
+    BioCexp=http://bioconductor.org/packages/2.14/data/experiment,
+    BioCextra=http://bioconductor.org/packages/2.14/extra
+
+Package: assertthat
+Source: CRAN
+Version: 0.1
+Hash: 4b419cfdc33a3019a7f3c6f0cdea6c38
+
+Package: BH
+Source: CRAN
+Version: 1.54.0-4
+
+Package: DBI
+Source: CRAN
+Version: 0.3.1
+
+Package: dplyr
+Source: CRAN
+Version: 0.2
+Hash: c570bfc57787d93723b630d85b70b7c8
+Requires: assertthat, BH, hflights, Lahman, magrittr, Rcpp
+
+Package: hflights
+Source: CRAN
+Version: 0.1
+Hash: c695268ebb08ef39e7bf4909e667406c
+
+Package: Lahman
+Source: CRAN
+Version: 2.0-3
+Hash: 45a202fe77d745af4b76d0683abf5963
+
+Package: lazyeval
+Source: CRAN
+Version: 0.1.9
+
+Package: magrittr
+Source: CRAN
+Version: 1.0.1
+Hash: 576e5bf21e3801499cebc27af6ad1627
+
+Package: packrat
+Source: github
+Version: 0.3.0.103
+Hash: 75655ed7d0d37d9aa77a0f22729d524a0cba6375
+GithubRepo: packrat
+GithubUsername: rstudio
+GithubRef: master
+GithubSha1: 75655ed7d0d37d9aa77a0f22729d524a0cba6375
+
+Package: R6
+Source: CRAN
+Version: 2.0
+
+Package: Rcpp
+Source: CRAN
+Version: 0.11.2
+Hash: ef2b1a5e45d1461bd720e4ebbe48e601

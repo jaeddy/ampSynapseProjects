@@ -8,9 +8,8 @@
 ###################
 **.Rproj**
 **.Rhistory
-
 .Rproj.user
-
 # PLINK version file #
 ######################
 .pversion
+packrat/lib*/
