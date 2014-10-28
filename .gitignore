@@ -8,7 +8,9 @@
 ###################
 **.Rproj**
 **.Rhistory
-.Rproj.user
+**.Rprofile**
+
+
 # PLINK version file #
 ######################
 .pversion
