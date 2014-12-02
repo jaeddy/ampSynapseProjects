@@ -1,7 +1,8 @@
-external.packages: 
 auto.snapshot: TRUE
 use.cache: FALSE
 print.banner.on.startup: auto
 vcs.ignore.lib: TRUE
 vcs.ignore.src: FALSE
+external.packages: synapseClient
 local.repos: 
+load.external.packages.on.startup: TRUE

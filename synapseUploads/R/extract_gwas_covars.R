@@ -1,6 +1,7 @@
 library(xlsx)
 
 setwd("synapseUploads/")
+dataDir <- "~/Dropbox/data/projects/"
 
 mayo_covars <- read.xlsx2("data/TLR5+GWAScov_10-28-14_0912_CM+SGY.xlsx", 1,
                           stringsAsFactors = FALSE, na.strings = "NA")
