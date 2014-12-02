@@ -7,32 +7,130 @@ output: html_document
 
 ## Estimated Data Parameters
 
-```{r data_params}
-bam_size <- 7 # average size of .bam file
-num_files <- 200 # estimated number of samples to process
+```{r data_params, echo=FALSE}
+bam_size <- 7 # average size of .bam file in GB
+num_bams <- 3000 # estimated number of samples to process
+
+fasta_size <- 3.1 # estimated size of FASTA-formatted genome file
+gtf_size <- 650 / 1000 # estimated size of Ensembl gtf file
 ```
+
+## Current AWS Workflow
+
+Files are transferred from local machine to S3 bucket.
+
+```{r analysis_params, echo=FALSE}
+put_per_bam <- 2 # includes local to S3 and EC2 to S3 transfers
+get_per_bam <- 1 # S3 to EC2 transfer
+num_ls <- 1 # should only happen once for job submission
+
+num_nodes <- 8
+node_cost_per_hour <- 0.22 # average cost of r3.4xlarge for us-west-2b
+
+# reference genome/transcriptome files are copied to each node (for now)
+get_per_fasta <- num_nodes
+get_per_gtf <- num_nodes
+```
+
 
 ## S3 Storage Costs
 
-```{r s3_storage_rates}
-tier1_rate <- 0.03
-tier2_rate <- 0.0295
+```{r s3_storage_rates, echo=FALSE}
+# Estimate total file sizes
+input_data_size <- num_bams * bam_size
+output_data_size <- num_bams * bam_size * 1.1 # outputs include new bam, bai,
+                                              # and text files with counts
+
+# Function to calculate total cost based on size and tiered rates
+calc_s3_storage_cost <- function(data_size) {
+    # all rates per GB
+    tier1_storage_rate <- 0.03 # first 1 TB / month
+    tier2_storage_rate <- 0.0295 # next 49 TB / month
+    tier3_storage_rate <- 0.0290 # next 450 TB / month
+    
+    if (data_size > 1000) {
+        tier1_cost <- tier1_storage_rate * 1000
+        rem_data <- data_size - 1000
+    } else {
+        tier1_cost <- tier1_storage_rate * data_size
+        rem_data <- 0
+    }
+    
+    if (rem_data > (49 * 1000)) {
+        tier2_cost <- tier2_storage_rate * 49 * 1000
+        rem_data <- data_size - (49 * 1000)
+    } else {
+        tier2_cost <- tier2_storage_rate * rem_data
+        rem_data <- 0
+    }
+    
+    if (rem_data > (450 * 1000)) {
+        tier3_cost <- tier3_storage_rate * 450 * 1000
+        rem_data <- data_size - (450 * 1000)
+    } else {
+        tier3_cost <- tier3_storage_rate * rem_data
+        rem_data <- 0
+    }
+    
+    tier1_cost + tier2_cost + tier3_cost
+}
+
+# Calculate monthly storage costs
+input_storage_cost <- calc_s3_storage_cost(input_data_size)
+output_storage_cost <- calc_s3_storage_cost(output_data_size)
 ```
 
-## S3 Transaction Costs
-```{r s3_transaction_rates}
-put_rate <- 0.005 # put, cp local to s3, mb, sync
-copy_rate <- 0.005 # cp s3 to s3
-get_rate <- 0.004 # get, cp s3 to local
 
+## S3 Transaction Costs
+
+```{r s3_transaction_rates, echo=FALSE}
+# all rates per 1000 requests
+put_rate <- 0.005 / 1000 # put, cp local to s3, mb, sync
+copy_rate <- 0.005 / 1000 # cp s3 to s3
+get_rate <- 0.004 / 1000 # get, cp s3 to local
+list_rate <- 0.005 / 1000 # ls
+
+bam_transaction_cost <- num_bams * (put_per_bam * put_rate +
+                                        get_per_bam * get_rate)
+fasta_transaction_cost <- get_per_fasta * get_rate
+gtf_transaction_cost <- get_per_gtf * get_rate
+ls_transaction_cost <- num_ls * list_rate
+
+transaction_cost <- bam_transaction_cost + fasta_transaction_cost +
+    gtf_transaction_cost + ls_transaction_cost
 ```
 
 ## S3 Transfer Costs
-```{r s3_transfer_rates}
+
+```{r s3_transfer_rates, echo=FALSE}
+# all rates per GB
 local_to_s3_rate <- 0.000
 s3_to_ec2_rate <- 0.000 # or 0.020 if different region / CloudFront
 ec2_to_s3_rate <- 0.000
 tier1_s3_to_local_rate <- 0.000 # first 1 GB / month
-tier2_s3_to_local_rate <- 0.120 # 
+tier2_s3_to_local_rate <- 0.120 # up to 10 TB / month
+
+transfer_cost <- 0
 ```
+
+## EC2 Costs
+
+```{r ec2_estimates, echo=FALSE}
+# times in hrs
+index_build_time <- 0.5 # roughly 30 min to build genome/transcriptome indices
+time_per_bam <- 1 # 1 hr for SNAPR per BAM is a conservative estimate
+snapr_time <- num_bams * time_per_bam / num_nodes # wall clock time for SNAPR
+total_time <- index_build_time + snapr_time # total wall clock time
+
+ec2_cost <- node_cost_per_hour * num_nodes * total_time
+```
+
+## Total Costs
+
+```{r report_totals, echo=FALSE}
+process_cost <- transaction_cost + transfer_cost + ec2_cost
+```
+
+Total processing cost: `r process_cost`  
+Total storage cost (per month): `r input_storage_cost + output_storage_cost`
 
