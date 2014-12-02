@@ -1,0 +1,38 @@
+---
+title: "SNAPR AWS Costs"
+author: "James Eddy"
+date: "December 1, 2014"
+output: html_document
+---
+
+## Estimated Data Parameters
+
+```{r data_params}
+bam_size <- 7 # average size of .bam file
+num_files <- 200 # estimated number of samples to process
+```
+
+## S3 Storage Costs
+
+```{r s3_storage_rates}
+tier1_rate <- 0.03
+tier2_rate <- 0.0295
+```
+
+## S3 Transaction Costs
+```{r s3_transaction_rates}
+put_rate <- 0.005 # put, cp local to s3, mb, sync
+copy_rate <- 0.005 # cp s3 to s3
+get_rate <- 0.004 # get, cp s3 to local
+
+```
+
+## S3 Transfer Costs
+```{r s3_transfer_rates}
+local_to_s3_rate <- 0.000
+s3_to_ec2_rate <- 0.000 # or 0.020 if different region / CloudFront
+ec2_to_s3_rate <- 0.000
+tier1_s3_to_local_rate <- 0.000 # first 1 GB / month
+tier2_s3_to_local_rate <- 0.120 # 
+```
+
