@@ -58,24 +58,78 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 
 
-<div id="estimated-data-parameters" class="section level2">
-<h2>Estimated Data Parameters</h2>
+<div id="aws-rates" class="section level2">
+<h2>AWS Rates</h2>
+<div id="s3-data-transfer" class="section level4">
+<h4>S3 Data Transfer</h4>
+<p>S3 data transfer costs are shown below. Transaction rates are per 1000 requests; transfer rates are per GB.</p>
+<table>
+<thead>
+<tr class="header">
+<th align="left">S3_step</th>
+<th align="left">transaction</th>
+<th align="left">tranfer</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">local to S3</td>
+<td align="left">0.005</td>
+<td align="left">0</td>
+</tr>
+<tr class="even">
+<td align="left">S3 to EC2</td>
+<td align="left">0.004</td>
+<td align="left">0</td>
+</tr>
+<tr class="odd">
+<td align="left">EC2 to S3</td>
+<td align="left">0.005</td>
+<td align="left">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="ec2-computing" class="section level4">
+<h4>EC2 Computing</h4>
+<p>We currently use the <strong>r3.4xlarge</strong> node type (16 processors, 122 GB RAM) and run clusters out of the <strong>us-west-2b</strong> region, which costs $0.22 on average.</p>
+</div>
 </div>
 <div id="current-aws-workflow" class="section level2">
 <h2>Current AWS Workflow</h2>
-<p>Files are transferred from local machine to S3 bucket.</p>
+<p>Our <code>snapr</code> processing pipeline, as currently implemented, operates on an existing S3 bucket and uses a grid computing environment to perform the following steps:</p>
+<ol style="list-style-type: decimal">
+<li>Genome and transcriptome assembly files (i.e., FASTA and GTF) are copied to each node.<br /></li>
+<li>Genome and transcriptome indices are built with <code>snapr</code> on each node.</li>
+<li>The S3 bucket is queried to obtain a list of all BAM files within a specified subdirectory.</li>
+<li>All BAM files are submitted as individual jobs to cluster nodes using Sun Grid Engine, where each job consists of the following steps:
+<ol style="list-style-type: lower-alpha">
+<li>BAM file is downloaded from S3 to the EC2 node<br /></li>
+<li><code>snapr</code> is used to re-process the BAM file<br /></li>
+<li>Outputs (re-aligned BAM and text files with count information) are uploaded to S3</li>
+</ol></li>
+</ol>
+<p>In sum, this process includes 2 put and 1 get steps per BAM file (including the original upload from a local machine to S3), as well as 1 list transaction. Copy steps for assembly files are equal to the number of nodes.</p>
+</div>
+<div id="cost-estimates" class="section level2">
+<h2>Cost Estimates</h2>
+<div id="estimated-data-parameters" class="section level4">
+<h4>Estimated Data Parameters</h4>
+<p>Inspection of several hundred BAM files revealed an average file size of about 7 GB (this can vary based on read length and coverage). For the purpose of the cost estimates below, I’m assuming about 3000 samples for 21 TB of total data.</p>
+<p>Also, while this contributes to a very small fraction of the cost, sizes for FASTA and GTF files are about 3.1 GB and 650 MB, respectively.</p>
+</div>
+<div id="s3-interaction-costs" class="section level4">
+<h4>S3 Interaction Costs</h4>
+<p>Reprocessing 3000 samples using a cluster of 8 nodes would amount to $0.0421 in total between transaction and transfer costs.</p>
+</div>
+<div id="ec2-computing-costs" class="section level4">
+<h4>EC2 Computing Costs</h4>
+<p>Building genome and transcriptome indices takes roughly 0.5 hours - this cost is multiplied by the number of nodes. A conservative estimate for the CPU time required to download, process, and upload the results for a single BAM file is 1 hour.</p>
+<p>With 3000 samples distributed across 8 nodes, the total wall clock time should be about 375.5 hours. With the node type rate given above, the total computing cost would therefore be $660.88.</p>
+</div>
 </div>
 <div id="s3-storage-costs" class="section level2">
 <h2>S3 Storage Costs</h2>
-</div>
-<div id="s3-transaction-costs" class="section level2">
-<h2>S3 Transaction Costs</h2>
-</div>
-<div id="s3-transfer-costs" class="section level2">
-<h2>S3 Transfer Costs</h2>
-</div>
-<div id="ec2-costs" class="section level2">
-<h2>EC2 Costs</h2>
 </div>
 <div id="total-costs" class="section level2">
 <h2>Total Costs</h2>

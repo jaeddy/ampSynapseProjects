@@ -5,43 +5,16 @@ date: "December 1, 2014"
 output: html_document
 ---
 
-## Estimated Data Parameters
-
-```{r data_params, echo=FALSE}
-bam_size <- 7 # average size of .bam file in GB
-num_bams <- 3000 # estimated number of samples to process
-
-fasta_size <- 3.1 # estimated size of FASTA-formatted genome file
-gtf_size <- 650 / 1000 # estimated size of Ensembl gtf file
-```
-
-## Current AWS Workflow
-
-Files are transferred from local machine to S3 bucket.
-
-```{r analysis_params, echo=FALSE}
-put_per_bam <- 2 # includes local to S3 and EC2 to S3 transfers
-get_per_bam <- 1 # S3 to EC2 transfer
-num_ls <- 1 # should only happen once for job submission
-
-num_nodes <- 8
-node_cost_per_hour <- 0.22 # average cost of r3.4xlarge for us-west-2b
-
-# reference genome/transcriptome files are copied to each node (for now)
-get_per_fasta <- num_nodes
-get_per_gtf <- num_nodes
+```{r load_packages, echo=FALSE}
+library(knitr)
 ```
 
 
-## S3 Storage Costs
+## AWS Rates
 
-```{r s3_storage_rates, echo=FALSE}
-# Estimate total file sizes
-input_data_size <- num_bams * bam_size
-output_data_size <- num_bams * bam_size * 1.1 # outputs include new bam, bai,
-                                              # and text files with counts
+```{r aws_rates, echo=FALSE}
 
-# Function to calculate total cost based on size and tiered rates
+# Function to calculate total S3 storage cost based on size and tiered rates
 calc_s3_storage_cost <- function(data_size) {
     # all rates per GB
     tier1_storage_rate <- 0.03 # first 1 TB / month
@@ -75,21 +48,109 @@ calc_s3_storage_cost <- function(data_size) {
     tier1_cost + tier2_cost + tier3_cost
 }
 
-# Calculate monthly storage costs
-input_storage_cost <- calc_s3_storage_cost(input_data_size)
-output_storage_cost <- calc_s3_storage_cost(output_data_size)
-```
-
-
-## S3 Transaction Costs
-
-```{r s3_transaction_rates, echo=FALSE}
+# S3 transaction rates
 # all rates per 1000 requests
 put_rate <- 0.005 / 1000 # put, cp local to s3, mb, sync
 copy_rate <- 0.005 / 1000 # cp s3 to s3
 get_rate <- 0.004 / 1000 # get, cp s3 to local
 list_rate <- 0.005 / 1000 # ls
 
+# S3 transfer rates
+# all rates per GB
+local_to_s3_rate <- 0.000
+s3_to_ec2_rate <- 0.000 # or 0.020 if different region / CloudFront
+ec2_to_s3_rate <- 0.000
+tier1_s3_to_local_rate <- 0.000 # first 1 GB / month
+tier2_s3_to_local_rate <- 0.120 # up to 10 TB / month
+
+# EC2 computing rate
+node_cost_per_hour <- 0.22 # average cost of r3.4xlarge for us-west-2b
+
+# Format S3 cost info as a table
+s3_cost_table <- data.frame(S3_step = c("local to S3",
+                                        "S3 to EC2",
+                                        "EC2 to S3"),
+                            transaction = 1000 * c(put_rate, get_rate, 
+                                                   put_rate),
+                            tranfer = c(local_to_s3_rate,
+                                        s3_to_ec2_rate,
+                                        ec2_to_s3_rate))
+```
+
+#### S3 Data Transfer
+
+S3 data transfer costs are shown below. Transaction rates are per 1000 
+requests; transfer rates are per GB.  
+
+`r kable(s3_cost_table, format = "markdown", align = "l", digits = 3)`
+
+#### EC2 Computing
+
+We currently use the **r3.4xlarge** node type (16 processors, 122 GB RAM) and
+run clusters out of the **us-west-2b** region, which costs 
+$`r node_cost_per_hour` on average.
+
+## Current AWS Workflow
+
+```{r analysis_params, echo=FALSE}
+put_per_bam <- 2 # includes local to S3 and EC2 to S3 transfers
+get_per_bam <- 1 # S3 to EC2 transfer
+num_ls <- 1 # should only happen once for job submission
+
+num_nodes <- 8
+
+# reference genome/transcriptome files are copied to each node (for now)
+get_per_fasta <- num_nodes
+get_per_gtf <- num_nodes
+```
+
+Our `snapr` processing pipeline, as currently implemented, operates on an
+existing S3 bucket and uses a grid computing environment to perform the
+following steps:
+
+1. Genome and transcriptome assembly files (i.e., FASTA and GTF) are copied to 
+each node.  
+2. Genome and transcriptome indices are built with `snapr` on each node.
+3. The S3 bucket is queried to obtain a list of all BAM files within a specified
+subdirectory.
+4. All BAM files are submitted as individual jobs to cluster nodes using Sun
+Grid Engine, where each job consists of the following steps:  
+    a. BAM file is downloaded from S3 to the EC2 node  
+    b. `snapr` is used to re-process the BAM file  
+    c. Outputs (re-aligned BAM and text files with count information) are 
+    uploaded to S3  
+
+In sum, this process includes `r put_per_bam` put and `r get_per_bam` get steps
+per BAM file (including the original upload from a local machine to S3), as well
+as `r num_ls` list transaction. Copy steps for assembly files are equal to the 
+number of nodes.
+
+## Cost Estimates
+
+#### Estimated Data Parameters
+
+```{r data_params, echo=FALSE}
+bam_size <- 7 # average size of .bam file in GB
+num_bams <- 3000 # estimated number of samples to process
+
+fasta_size <- 3.1 # estimated size of FASTA-formatted genome file
+gtf_size <- 650 / 1000 # estimated size of Ensembl gtf file
+```
+
+Inspection of several hundred BAM files revealed an average file size of about
+`r bam_size` GB (this can vary based on read length and coverage). For the 
+purpose of the cost estimates below, I'm assuming about `r num_bams` samples for
+`r bam_size * num_bams / 1000` TB of total data.
+
+Also, while this contributes to a very small fraction of the cost, sizes
+for FASTA and GTF files are about `r fasta_size` GB and `r gtf_size * 1000` MB,
+respectively.
+
+
+#### S3 Interaction Costs
+
+```{r s3_interaction_cost, echo=FALSE}
+# estimated transaction costs
 bam_transaction_cost <- num_bams * (put_per_bam * put_rate +
                                         get_per_bam * get_rate)
 fasta_transaction_cost <- get_per_fasta * get_rate
@@ -98,22 +159,26 @@ ls_transaction_cost <- num_ls * list_rate
 
 transaction_cost <- bam_transaction_cost + fasta_transaction_cost +
     gtf_transaction_cost + ls_transaction_cost
+
+# estimated transfer costs
+bam_up_cost <- num_bams * bam_size * ((put_per_bam / 2)  * local_to_s3_rate +
+                                          (put_per_bam / 2) * ec2_to_s3_rate)
+bam_down_cost <- num_bams * bam_size * get_per_bam * s3_to_ec2_rate
+fasta_down_cost <- get_per_fasta * fasta_size * s3_to_ec2_rate
+gtf_down_cost <- get_per_gtf * gtf_size * s3_to_ec2_rate
+
+transfer_cost <- bam_up_cost + bam_down_cost + fasta_down_cost + gtf_down_cost
+
+# total S3 interaction costs
+s3_interaction_cost <- transaction_cost + transfer_cost
 ```
 
-## S3 Transfer Costs
+Reprocessing `r num_bams` samples using a cluster of `r num_nodes` nodes would
+amount to $`r format(s3_interaction_cost, digits = 3)` in total between 
+transaction and transfer costs.
 
-```{r s3_transfer_rates, echo=FALSE}
-# all rates per GB
-local_to_s3_rate <- 0.000
-s3_to_ec2_rate <- 0.000 # or 0.020 if different region / CloudFront
-ec2_to_s3_rate <- 0.000
-tier1_s3_to_local_rate <- 0.000 # first 1 GB / month
-tier2_s3_to_local_rate <- 0.120 # up to 10 TB / month
 
-transfer_cost <- 0
-```
-
-## EC2 Costs
+#### EC2 Computing Costs
 
 ```{r ec2_estimates, echo=FALSE}
 # times in hrs
@@ -124,6 +189,29 @@ total_time <- index_build_time + snapr_time # total wall clock time
 
 ec2_cost <- node_cost_per_hour * num_nodes * total_time
 ```
+
+Building genome and transcriptome indices takes roughly `r index_build_time` 
+hours - this cost is multiplied by the number of nodes. A conservative 
+estimate for the CPU time required to download, process, and upload the results
+for a single BAM file is `r time_per_bam` hour.
+
+With `r num_bams` samples distributed across `r num_nodes` nodes, the total
+wall clock time should be about `r total_time` hours. With the node type 
+rate given above, the total computing cost would therefore be $`r ec2_cost`.
+
+## S3 Storage Costs
+
+```{r s3_storage_cost, echo=FALSE}
+# Estimate total file sizes
+input_data_size <- num_bams * bam_size
+output_data_size <- num_bams * bam_size * 1.1 # outputs include new bam, bai,
+                                              # and text files with counts
+
+# Calculate monthly storage costs
+input_storage_cost <- calc_s3_storage_cost(input_data_size)
+output_storage_cost <- calc_s3_storage_cost(output_data_size)
+```
+
 
 ## Total Costs
 
