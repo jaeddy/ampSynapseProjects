@@ -58,6 +58,7 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 
 
+<hr />
 <div id="aws-rates" class="section level2">
 <h2>AWS Rates</h2>
 <div id="s3-data-transfer" class="section level4">
@@ -92,7 +93,18 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </div>
 <div id="ec2-computing" class="section level4">
 <h4>EC2 Computing</h4>
-<p>We currently use the <strong>r3.4xlarge</strong> node type (16 processors, 122 GB RAM) and run clusters out of the <strong>us-west-2b</strong> region, which costs $0.22 on average.</p>
+<p>We currently use the <strong>r3.4xlarge</strong> node type (16 processors, 122 GB RAM) and run clusters out of the <strong>us-west-2b</strong> region, which costs <strong>$0.22</strong> on average.</p>
+</div>
+<div id="s3-storage" class="section level4">
+<h4>S3 Storage</h4>
+<p>Tiered <em>monthly</em> storage costs are as follows:</p>
+<ul>
+<li>$0.03 per GB for the first 1 TB / month<br /></li>
+<li>$0.0295 per GB for the next 49 TB / month<br /></li>
+<li>$0.029 per GB for the next 450 TB / month</li>
+</ul>
+<p>While higher tiers exist, it’s unlikely that data storage requirements would exceed the 550 TB encompassed by the first three tiers.</p>
+<hr />
 </div>
 </div>
 <div id="current-aws-workflow" class="section level2">
@@ -110,30 +122,28 @@ if (window.hljs && document.readyState && document.readyState === "complete") {
 </ol></li>
 </ol>
 <p>In sum, this process includes 2 put and 1 get steps per BAM file (including the original upload from a local machine to S3), as well as 1 list transaction. Copy steps for assembly files are equal to the number of nodes.</p>
+<hr />
 </div>
 <div id="cost-estimates" class="section level2">
 <h2>Cost Estimates</h2>
 <div id="estimated-data-parameters" class="section level4">
 <h4>Estimated Data Parameters</h4>
-<p>Inspection of several hundred BAM files revealed an average file size of about 7 GB (this can vary based on read length and coverage). For the purpose of the cost estimates below, I’m assuming about 3000 samples for 21 TB of total data.</p>
+<p>Inspection of several hundred BAM files revealed an average file size of about <strong>7 GB</strong> (this can vary based on read length and coverage). For the purpose of the cost estimates below, I’m assuming about <strong>3000</strong> samples for <strong>21 TB</strong> of total data.</p>
 <p>Also, while this contributes to a very small fraction of the cost, sizes for FASTA and GTF files are about 3.1 GB and 650 MB, respectively.</p>
 </div>
 <div id="s3-interaction-costs" class="section level4">
 <h4>S3 Interaction Costs</h4>
-<p>Reprocessing 3000 samples using a cluster of 8 nodes would amount to $0.0421 in total between transaction and transfer costs.</p>
+<p>Reprocessing 3000 samples using a cluster of 8 nodes would amount to <strong>$0.0421</strong> in total between transaction and transfer costs.</p>
 </div>
 <div id="ec2-computing-costs" class="section level4">
 <h4>EC2 Computing Costs</h4>
 <p>Building genome and transcriptome indices takes roughly 0.5 hours - this cost is multiplied by the number of nodes. A conservative estimate for the CPU time required to download, process, and upload the results for a single BAM file is 1 hour.</p>
-<p>With 3000 samples distributed across 8 nodes, the total wall clock time should be about 375.5 hours. With the node type rate given above, the total computing cost would therefore be $660.88.</p>
+<p>With 3000 samples distributed across 8 nodes, the total wall clock time should be about 375.5 hours. With the node type rate given above, the total computing cost would therefore be <strong>$660.88</strong>.</p>
 </div>
+<div id="s3-storage-costs" class="section level4">
+<h4>S3 Storage Costs</h4>
+<p>Storing all input RNAseq data (as BAM files) on S3 would cost $620 per month. The reprocessed BAM files and count data would add an additional $681.95 per month. The total montly cost for storing all 44.1 TB of data would be <strong>$1301.95</strong>; however, some (or all) of this storage might only be needed short-term.</p>
 </div>
-<div id="s3-storage-costs" class="section level2">
-<h2>S3 Storage Costs</h2>
-</div>
-<div id="total-costs" class="section level2">
-<h2>Total Costs</h2>
-<p>Total processing cost: 660.922069<br />Total storage cost (per month): 1301.95</p>
 </div>
 
 
