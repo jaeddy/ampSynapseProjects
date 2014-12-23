@@ -5,14 +5,20 @@ date: "December 1, 2014"
 output: html_document
 ---
 
-```{r load_packages, echo=FALSE}
+```{r load_packages, echo=FALSE, warning=FALSE}
 library(knitr)
 ```
 
+------------
 
 ## AWS Rates
 
 ```{r aws_rates, echo=FALSE}
+# S3 storage rates
+# all rates per GB
+tier1_storage_rate <- 0.03 # first 1 TB / month
+tier2_storage_rate <- 0.0295 # next 49 TB / month
+tier3_storage_rate <- 0.0290 # next 450 TB / month
 
 # Function to calculate total S3 storage cost based on size and tiered rates
 calc_s3_storage_cost <- function(data_size) {
@@ -88,7 +94,20 @@ requests; transfer rates are per GB.
 
 We currently use the **r3.4xlarge** node type (16 processors, 122 GB RAM) and
 run clusters out of the **us-west-2b** region, which costs 
-$`r node_cost_per_hour` on average.
+**$`r node_cost_per_hour`** on average.
+
+#### S3 Storage
+
+Tiered *monthly* storage costs are as follows:
+
++ $`r tier1_storage_rate` per GB for the first 1 TB / month  
++ $`r tier2_storage_rate` per GB for the next 49 TB / month  
++ $`r tier3_storage_rate` per GB for the next 450 TB / month
+
+While higher tiers exist, it's unlikely that data storage requirements would
+exceed the 550 TB encompassed by the first three tiers.
+
+------------
 
 ## Current AWS Workflow
 
@@ -125,6 +144,8 @@ per BAM file (including the original upload from a local machine to S3), as well
 as `r num_ls` list transaction. Copy steps for assembly files are equal to the 
 number of nodes.
 
+------------
+
 ## Cost Estimates
 
 #### Estimated Data Parameters
@@ -138,9 +159,9 @@ gtf_size <- 650 / 1000 # estimated size of Ensembl gtf file
 ```
 
 Inspection of several hundred BAM files revealed an average file size of about
-`r bam_size` GB (this can vary based on read length and coverage). For the 
-purpose of the cost estimates below, I'm assuming about `r num_bams` samples for
-`r bam_size * num_bams / 1000` TB of total data.
+**`r bam_size` GB** (this can vary based on read length and coverage). For the 
+purpose of the cost estimates below, I'm assuming about **`r num_bams`** 
+samples for **`r bam_size * num_bams / 1000` TB** of total data.
 
 Also, while this contributes to a very small fraction of the cost, sizes
 for FASTA and GTF files are about `r fasta_size` GB and `r gtf_size * 1000` MB,
@@ -174,7 +195,7 @@ s3_interaction_cost <- transaction_cost + transfer_cost
 ```
 
 Reprocessing `r num_bams` samples using a cluster of `r num_nodes` nodes would
-amount to $`r format(s3_interaction_cost, digits = 3)` in total between 
+amount to **$`r format(s3_interaction_cost, digits = 3)`** in total between 
 transaction and transfer costs.
 
 
@@ -197,9 +218,9 @@ for a single BAM file is `r time_per_bam` hour.
 
 With `r num_bams` samples distributed across `r num_nodes` nodes, the total
 wall clock time should be about `r total_time` hours. With the node type 
-rate given above, the total computing cost would therefore be $`r ec2_cost`.
+rate given above, the total computing cost would therefore be **$`r ec2_cost`**.
 
-## S3 Storage Costs
+#### S3 Storage Costs
 
 ```{r s3_storage_cost, echo=FALSE}
 # Estimate total file sizes
@@ -212,13 +233,11 @@ input_storage_cost <- calc_s3_storage_cost(input_data_size)
 output_storage_cost <- calc_s3_storage_cost(output_data_size)
 ```
 
+Storing all input RNAseq data (as BAM files) on S3 would cost 
+$`r input_storage_cost` per month. The reprocessed BAM files and count data
+would add an additional $`r output_storage_cost` per month. The total montly
+cost for storing all `r (input_data_size + output_data_size) / 1000` TB of data
+would be **$`r input_storage_cost + output_storage_cost`**; however, some (or 
+all) of this storage might only be needed short-term.
 
-## Total Costs
-
-```{r report_totals, echo=FALSE}
-process_cost <- transaction_cost + transfer_cost + ec2_cost
-```
-
-Total processing cost: `r process_cost`  
-Total storage cost (per month): `r input_storage_cost + output_storage_cost`
 
