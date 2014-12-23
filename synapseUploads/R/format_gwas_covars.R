@@ -8,6 +8,8 @@ synapseLogin()
 # Define paths for required Synapse objects
 unformatted_gwas_covars_address <- "syn2866149" # covariates Excel file
 
+tmp <- "~/Dropbox/data/projects/ampSynapseProjects/synapseUploads/mayo-gwas-covariates/MayoGWAScovariates.xlsx"
+
 # Create a temporary directory to store downloaded files
 tmpDir <- file.path(getwd(), "tmp/")
 if (!file.exists(tmpDir)) {
