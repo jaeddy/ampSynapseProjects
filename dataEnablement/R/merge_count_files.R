@@ -7,11 +7,11 @@
 # 
 # source("merge_count_files.R")
 #
-dir <- "mayo-prelim-rnaseq/ad-rnaseq-counts"
-countType <- "gene_name"
-prefix <- "ad_pilot_rnaseq"
-
-filePath <- create_merged_file(dir, countType, prefix)
+# dir <- "mayo-prelim-rnaseq/ad-rnaseq-counts"
+# countType <- "gene_name"
+# prefix <- "ad_pilot_rnaseq"
+# 
+# filePath <- create_merged_file(dir, countType, prefix)
 
 countTypes <- c("gene_name", "gene_id",
                 "junction_name", "junction_id",
