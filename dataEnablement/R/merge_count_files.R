@@ -7,11 +7,11 @@
 # 
 # source("merge_count_files.R")
 #
-# dir <- "~/Dropbox/data/projects/ampSynapseProjects/mayo-prelim-rnaseq"
-# countType <- "gene_name"
-# prefix <- "ad_psp_pilot_rnaseq"
-# 
-# create_merged_file(dir, countType, prefix)
+dir <- "mayo-prelim-rnaseq/ad-rnaseq-counts"
+countType <- "gene_name"
+prefix <- "ad_pilot_rnaseq"
+
+filePath <- create_merged_file(dir, countType, prefix)
 
 countTypes <- c("gene_name", "gene_id",
                 "junction_name", "junction_id",
@@ -30,17 +30,17 @@ create_merged_file <- function(dir = "", countType = countTypes, prefix = "") {
         sample[i] <- sub("(^[^.]+)(.+$)", "\\1", basename(filePath))
         
         if (i == 1) {
-            tmpDat <- read.table(filePath, row.names = 1)
-            countDat <- data.frame(matrix(nrow = nrow(tmpDat), 
-                                          ncol = length(fileList)),
-                                   row.names = row.names(tmpDat))
+            tmpDat <- as.matrix(read.table(filePath, row.names = 1))
+            countDat <- matrix(nrow = nrow(tmpDat), 
+                               ncol = length(fileList))
+            rownames(countDat) <- row.names(tmpDat)
             countDat[, 1] <- tmpDat
         } else {
-            countDat[, i] <- read.table(filePath, row.names = 1)
+            countDat[, i] <- as.matrix(read.table(filePath, row.names = 1))
         }   
     }
     colnames(countDat) <- sample
-    countDat <- as.data.frame(t(countDat))
+    countDat <- t(countDat)
     
     message("Writing file...")
     fileName <- paste(prefix, countType, "counts.txt", sep = "_")
@@ -52,8 +52,7 @@ create_merged_file <- function(dir = "", countType = countTypes, prefix = "") {
     message(paste0("Number of variables: ", ncol(countDat)))
     message(paste0("Number of observations: ", nrow(countDat)))
     
-    return(paste0(file.path(dir, fileName, ".gz")))
+    return(paste0(file.path(dir, fileName), ".gz"))
 }
-
 
 
