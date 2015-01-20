@@ -51,6 +51,8 @@ create_merged_file <- function(dir = "", countType = countTypes, prefix = "") {
     message(paste0("Output file: ", fileName))
     message(paste0("Number of variables: ", ncol(countDat)))
     message(paste0("Number of observations: ", nrow(countDat)))
+    
+    return(paste0(file.path(dir, fileName, ".gz")))
 }
 
 
