@@ -1,0 +1,136 @@
+---
+title: "File Reformatting Example"
+author: "James Eddy"
+date: "January 26, 2015"
+output: word_document
+---
+
+First, load the required libraries.
+```{r load_libaries, message=FALSE}
+library(synapseClient)
+library(xlsx)
+library(dplyr)
+library(knitr)
+```
+
+Login to Synapse using credentials saved in .synapseConfig file.
+```{r syn_login}
+synapseLogin()
+```
+
+Using functions in `synapseClient` and `xlsx`, load data from the Synapse
+object into R.
+```{r get_data, cache=TRUE}
+# Define paths for required Synapse objects
+unformatted_gwas_covars_address <- "syn3025476" # covariates Excel file
+
+# Download files from Synapse
+covars_file <- synGet(unformatted_gwas_covars_address)
+covars_file_path <- getFileLocation(covars_file)
+
+# Load the files into R
+unformatted_gwas_covars <- read.xlsx2(covars_file_path, 2, 
+                                      stringsAsFactors = FALSE)
+```
+
+AMP-AD partner teams were provided with a template to follow for providing and
+formatting clinical variables. I've used the column headers from this template
+to display an example, but I'll also use them to rearrange the Mayo data below.
+
+```{r build_template}
+# Define column headers from template
+headers <- c("participant_id", "age_at_onset", "age_at_last_assessment", 
+             "age_at_death", "post_mortem_interval", "sex", "education",
+             "apoe_genotype", "race_ethnicity", "braak_stage", "mmse_at_onset",
+             "mmse_at_last_assessment", "cerad")
+
+template <- data_frame("sample1", 75, 86, 86, 10, "M", 12, "E3E4", 
+                  "European American", "V", 24, 18, 30)
+names(template) <- headers
+template[2, ] <- c("sample100", 82, 88, 89, 4, "F", 17, "E2E2", 
+                  "African American", "VI", 23, 17, 17)
+
+
+```
+
+Here's what the template looks like:
+`r kable(template, format = "markdown", align = "l")`
+
+For comparison, here is what the Mayo table looks like, before reformatting:
+`r kable(head(unformatted_gwas_covars), format = "markdown", align = "l")`
+
+Now for the fun part! I'll rearrange and reformat the data to fit the template,
+placing NA entries for any information not included in the Mayo table.
+
+```{r reformat_data, eval=FALSE}
+# Simple function to recode APOE genotype value
+recode_apoe_status <- Vectorize(function(apoe_status) {
+    if (apoe_status == 1) {
+        "E4"
+    } else if (apoe_status == 0) {
+        "none"
+    } else {
+        NA
+    }
+})
+
+# Do the reformatting with dplyr (and pipes!)
+gwas_covars <- unformatted_gwas_covars %>% 
+    # pull out relevant variables from original data frame
+    select(participant_id = IID, age_at_diagnosis = AgeOver60, 
+           sex = Sex, apoe_genotype = APOE4_Dose) %>%
+    
+    # rename and modify variables to match template
+    mutate(age_at_last_assessment = as.numeric(age_at_diagnosis) + 60,
+           sex = ifelse(sex == 1, "M", "F"),
+           apoe_genotype = recode_apoe_status(apoe_genotype)) %>%
+    
+    # add empty columns for additional template variables
+    mutate(age_at_onset = NA,
+           age_at_death = NA,
+           post_mortem_interval = NA,
+           education = NA,
+           race_ethnicity = NA,
+           braak_stage = NA,
+           mmse_at_onset = NA,
+           mmse_at_last_assessment = NA,
+           cerad = NA) %>%
+    
+    # reorder variables to match template column order
+    select(one_of(headers))
+```
+
+The following code is used to upload the new, reformatted data back to our
+Synapse site.
+
+```{r put_data, eval=FALSE}
+# Write new data frame to text file
+file_path <- file.path(tempdir(), "mayo_gwas_clinical_vars.txt")
+write.table(gwas_covars, file_path)
+
+formatted_covars_file <- File(path = file_path, 
+                              parentId = covars_file$properties$parentId)
+formatted_covars_file <- synStore(formatted_covars_file)
+```
+
+Importantly, I can use my custom `build_relationship` function to define the
+provenance for this activity, linking input to code to output. Note: I'll need
+to check on Synapse for the object ID of the file I just uploaded.
+
+```{r set_provenance, eval=FALSE}
+source("synapseHelpers/R/set_provenance.R")
+
+activity_name <- "clinical data formatting"
+input_files <- c("syn3025476")
+
+code_address <- paste0("https://github.com/jaeddy/ampSynapseProjects/",
+"raw/master/synapseUploads/R/format_gwas_covars.R")
+code_files <- list(list(name = "format_gwas_covars.R",
+                        url = code_address))
+output_files <- c("syn3026432")
+description <- paste("To execute run:", 
+                     "Rscript format_gwas_covars.R")
+
+build_relationship(activity_name, input_files, code_files, 
+                   output_files, description)
+```
