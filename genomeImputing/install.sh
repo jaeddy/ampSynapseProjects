@@ -36,7 +36,6 @@ cd ..
 # install GTOOL
 wget http://www.well.ox.ac.uk/~cfreeman/software/gwas/gtool_v0.7.5_x86_64.tgz
 tar -zxvf gtool_v0.7.5_x86_64.tgz
-mv gtool_v0.7.5_x86_64.tgz gtool
 
 # install qctool
 wget http://www.well.ox.ac.uk/~gav/qctool/resources/qctool_v1.4-linux-x86_64.tgz
