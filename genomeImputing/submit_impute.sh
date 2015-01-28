@@ -10,7 +10,7 @@ ROOT_DIR=./
 DATA_DIR=${ROOT_DIR}data/
 GWAS_DIR=${DATA_DIR}gwas_results/${GWAS_DATA}.b37/
 
-for CHR in $(seq 1 21); do
+for CHR in $(seq 1 22); do
 
     NUM_FILE="${GWAS_DIR}impute_intervals/num_ints.txt"
     NUM_INTS=$(awk -v chr=$CHR '$2==chr {print $3}' $NUM_FILE)
@@ -31,7 +31,7 @@ for CHR in $(seq 1 21); do
         echo $INT_CHECK
         if ! grep -q $INT_CHECK $PREV_INTS_FILE; then
             qsub -V -M james.a.eddy@gmail.com -m abe \
-            -N chr${CHR}int${INT}_${CHUNK_START}-${CHUNK_END} \
+            -N chr${CHR}int${INT}_${CHUNK_START}-${CHUNK_END} -j y \
             -cwd ./impute.sh $GWAS_DATA $CHR $CHUNK_START $CHUNK_END ;
         else
             echo "previously run interval $INT_CHECK"
