@@ -50,10 +50,10 @@ echo
 cat $CHUNK_LIST > $GEN_FILE
 
 # create new directory to store results
-RESULTS_DIR=${DATA_DIR}${GWAS_DIR}${GWAS_DATA}.imputed.qc/
+RESULTS_DIR=${GWAS_DIR}${GWAS_DATA}.imputed.qc/
 
-if [ ! -e "$RESULTS_DIR" ]; then
-    mkdir "$RESULTS_DIR"
+if [ ! -e "${DATA_DIR}${RESULTS_DIR}" ]; then
+    mkdir "${DATA_DIR}${RESULTS_DIR}"
 fi
 
 # perform QC with qctool
@@ -61,28 +61,29 @@ QC_FILE=${RESULTS_DIR}${GWAS_DATA}.chr${CHR}.imputed.qc.gen
 
 echo "Performing QC on merged file ${GEN_FILE}..."
 echo
-time $QCTOOL_EXEC -g $GEN_FILE -og $QC_FILE \
+time $QCTOOL_EXEC -g $GEN_FILE -og ${DATA_DIR}${QC_FILE} \
     -snp-missing-rate 0.05 -maf 0 1 -info 0.4 1 -hwe 20
 
 # qctool adds an extra columns of NA for some reason; need to remove
-# TMP_FILE=`mktemp qcgen.XXX`
+TMP_FILE=`mktemp qcgen.XXX`
 
 echo "Removing extraneous first coumn from QC output ${QC_FILE}..."
 echo
-cut -d " " -f 2- $QC_FILE > $TMP_FILE
-mv $TMP_FILE $QC_FILE
+cut -d " " -f 2- ${DATA_DIR}${QC_FILE} > $TMP_FILE
+mv $TMP_FILE ${DATA_DIR}${QC_FILE}
 
 # convert to ped/map with gtool
 PED_FILE="${RESULTS_DIR}${GWAS_DATA}.chr${CHR}.imputed.ped"
 MAP_FILE="${RESULTS_DIR}${GWAS_DATA}.chr${CHR}.imputed.map"
 
-echo "$GTOOL_EXEC -G --g $QC_FILE --s $SAMPLE_FILE --ped $PED_FILE --map $MAP_FILE --phenotype plink_pheno"
+echo "$GTOOL_EXEC -G --g ${DATA_DIR}${QC_FILE} --s ${DATA_DIR}${SAMPLE_FILE} --ped ${DATA_DIR}${PED_FILE} --map ${DATA_DIR}${MAP_FILE} --phenotype plink_pheno"
 echo
 
 echo "Converting gen/sample format to ped/map..."
 echo
-time $GTOOL_EXEC -G --g $QC_FILE --s $SAMPLE_FILE \
-    --ped $PED_FILE --map $MAP_FILE \
+time $GTOOL_EXEC -G -\
+    -g ${DATA_DIR}${QC_FILE} --s ${DATA_DIR}${SAMPLE_FILE} \
+    --ped ${DATA_DIR}${PED_FILE} --map ${DATA_DIR}${MAP_FILE} \
     --phenotype plink_pheno --chr ${CHR}
 
 gtool swaps the first 2 columns of the ped file; switch back
@@ -91,4 +92,9 @@ TMP_FILE=`mktemp ped.XXX`
 echo "Swaping first two columns of gtool generated ped file..."
 echo
 paste <(cut -f 1-2 $PED_FILE | awk '{OFS = "\t"; t = $1; $1 = $2; $2 = t; print}') <(cut -f 3- $PED_FILE) > $TMP_FILE
-mv $TMP_FILE $PED_FILE
+mv $TMP_FILE ${DATA_DIR}${PED_FILE}
+
+# copy qc'd files to S3
+aws s3 cp \
+    ${DATA_DIR}${RESULTS_DIR} \
+    ${S3_BUCKET}${RESULTS_DIR}
