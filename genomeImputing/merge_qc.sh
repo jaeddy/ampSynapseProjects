@@ -12,7 +12,7 @@ ROOT_DIR=./
 DATA_DIR=/mnt/data/
 
 if [ ! -e "$DATA_DIR" ]; then
-	mkdir "$DATA_DIR"
+    mkdir "$DATA_DIR"
 fi
 
 
@@ -29,15 +29,18 @@ QCTOOL_EXEC=${ROOT_DIR}resources/qctool/qctool
 SAMPLE_FILE=${GWAS_HAP_DIR}${GWAS_DATA}.chr${CHR}.phased.sample
 
 # copy data from S3 bucket
-aws s3 cp --dryrun ${S3_BUCKET}${SAMPLE_FILE} .
-#	${DATA_DIR}${SAMPLE_FILE}
+aws s3 cp --dryrun \
+    ${S3_BUCKET}${SAMPLE_FILE} \
+    ${DATA_DIR}${SAMPLE_FILE}
 
-aws s3 cp --dryrun ${S3_BUCKET}${GWAS_IMP_DIR} ${DATA_DIR}${GWAS_IMP_DIR} \
-	--recursive --exclude "*" --include "*chr${CHR}*"
+aws s3 cp --dryrun \
+    ${S3_BUCKET}${GWAS_IMP_DIR} \
+    ${DATA_DIR}${GWAS_IMP_DIR} \
+    --recursive --exclude "*" --include "*chr${CHR}*"
 
 # get list of imputed genotype files for chromosome
-#CHUNK_LIST=$(ls -d -1 ${DATA_DIR}${GWAS_IMP_DIR}*.* \
-#	| grep "chr${CHR}.*.imputed$")
+# CHUNK_LIST=$(ls -d -1 ${DATA_DIR}${GWAS_IMP_DIR}*.* \
+#     | grep "chr${CHR}.*.imputed$")
 
 # merge all imputed genotype files for chromosome
 GEN_FILE="${DATA_DIR}${GWAS_IMP_DIR}${GWAS_DATA}.chr${CHR}.imputed.gen"
@@ -50,7 +53,7 @@ cat $CHUNK_LIST > $GEN_FILE
 RESULTS_DIR=${DATA_DIR}${GWAS_DIR}${GWAS_DATA}.imputed.qc/
 
 # if [ ! -e "$RESULTS_DIR" ]; then
-# 	mkdir "$RESULTS_DIR"
+#     mkdir "$RESULTS_DIR"
 # fi
 
 # perform QC with qctool
@@ -59,7 +62,7 @@ QC_FILE=${RESULTS_DIR}${GWAS_DATA}.chr${CHR}.imputed.qc.gen
 echo "Performing QC on merged file ${GEN_FILE}..."
 echo
 # time $QCTOOL_EXEC -g $GEN_FILE -og $QC_FILE \
-# 	-snp-missing-rate 0.05 -maf 0 1 -info 0.4 1 -hwe 20
+#     -snp-missing-rate 0.05 -maf 0 1 -info 0.4 1 -hwe 20
 
 # qctool adds an extra columns of NA for some reason; need to remove
 # TMP_FILE=`mktemp qcgen.XXX`
@@ -79,8 +82,8 @@ echo
 echo "Converting gen/sample format to ped/map..."
 echo
 # time $GTOOL_EXEC -G --g $QC_FILE --s $SAMPLE_FILE \
-#  	--ped $PED_FILE --map $MAP_FILE \
-#  	--phenotype plink_pheno --chr ${CHR}
+#     --ped $PED_FILE --map $MAP_FILE \
+#     --phenotype plink_pheno --chr ${CHR}
 
 # gtool swaps the first 2 columns of the ped file; switch back
 # TMP_FILE=`mktemp ped.XXX`
