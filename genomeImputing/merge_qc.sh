@@ -7,13 +7,13 @@ GWAS_DATA=SYounkin_MayoGWAS_09-05-08
 CHR=22
 
 # directories
-S3_BUCKET=s3://mayo-gwas-impute
+S3_BUCKET=s3://mayo-gwas-impute/
 ROOT_DIR=./
-DATA_DIR=/mnt/${ROOT_DIR}data/
+DATA_DIR=/mnt/data/
 
-# if [ ! -e "$DATA_DIR" ]; then
-# 	mkdir "$DATA_DIR"
-# fi
+if [ ! -e "$DATA_DIR" ]; then
+	mkdir "$DATA_DIR"
+fi
 
 
 GWAS_DIR=gwas_results/
@@ -29,18 +29,15 @@ QCTOOL_EXEC=${ROOT_DIR}resources/qctool/qctool
 SAMPLE_FILE=${GWAS_HAP_DIR}${GWAS_DATA}.chr${CHR}.phased.sample
 
 # copy data from S3 bucket
-aws s3 cp --dryrun \ # .sample file
-	${S3_BUCKET}${SAMPLE_FILE} \
-	${DATA_DIR}${SAMPLE_FILE}
+aws s3 cp --dryrun ${S3_BUCKET}${SAMPLE_FILE} .
+#	${DATA_DIR}${SAMPLE_FILE}
 
-aws s3 cp --dryrun \ # imputed genotype files
-	${S3_BUCKET}${GWAS_IMP_DIR} \
-	${DATA_DIR}${GWAS_IMP_DIR} \
+aws s3 cp --dryrun ${S3_BUCKET}${GWAS_IMP_DIR} ${DATA_DIR}${GWAS_IMP_DIR} \
 	--recursive --exclude "*" --include "*chr${CHR}*"
 
 # get list of imputed genotype files for chromosome
-CHUNK_LIST=$(ls -d -1 ${DATA_DIR}${GWAS_IMP_DIR}*.* \
-	| grep "chr${CHR}.*.imputed$")
+#CHUNK_LIST=$(ls -d -1 ${DATA_DIR}${GWAS_IMP_DIR}*.* \
+#	| grep "chr${CHR}.*.imputed$")
 
 # merge all imputed genotype files for chromosome
 GEN_FILE="${DATA_DIR}${GWAS_IMP_DIR}${GWAS_DATA}.chr${CHR}.imputed.gen"
@@ -65,7 +62,7 @@ echo
 # 	-snp-missing-rate 0.05 -maf 0 1 -info 0.4 1 -hwe 20
 
 # qctool adds an extra columns of NA for some reason; need to remove
-TMP_FILE=`mktemp qcgen.XXX`
+# TMP_FILE=`mktemp qcgen.XXX`
 
 echo "Removing extraneous first coumn from QC output ${QC_FILE}..."
 echo
