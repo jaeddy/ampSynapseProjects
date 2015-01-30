@@ -1,8 +1,7 @@
 #!/bin/bash
 
 # assign inputs
-GWAS_DATA="$1"
-CHR="$2"
+GWAS_DATA=SYounkin_MayoGWAS_09-05-08
 
 # directories
 S3_BUCKET=s3://mayo-gwas-impute/
@@ -34,7 +33,7 @@ cat $FILE_LIST | while read FILE; do
     # convert to ped/map with gtool
     PED_FILE="${RESULTS_DIR}${GWAS_DATA}.chr${CHR}.imputed.ped"
     MAP_FILE="${RESULTS_DIR}${GWAS_DATA}.chr${CHR}.imputed.map"
-    
+
     echo "$GTOOL_EXEC -G --g ${DATA_DIR}${QC_FILE} --s ${DATA_DIR}${SAMPLE_FILE} --ped ${DATA_DIR}${PED_FILE} --map ${DATA_DIR}${MAP_FILE} --phenotype plink_pheno"
     echo
 
@@ -59,10 +58,10 @@ cat $FILE_LIST | while read FILE; do
 
     echo "Uploading results to S3..."
     echo
-    # aws s3 cp \
-    #     ${DATA_DIR}${RESULTS_DIR} \
-    #     ${S3_BUCKET}${RESULTS_DIR} \
-    #     --recursive --exclude "*" --include "*chr${CHR}*"
+    aws s3 cp --dryrun \
+        ${DATA_DIR}${RESULTS_DIR} \
+        ${S3_BUCKET}${RESULTS_DIR} \
+        --recursive --exclude "*" --include "*chr${CHR}*"
 done
 
 rm $FILE_LIST
