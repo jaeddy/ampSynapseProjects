@@ -77,9 +77,6 @@ mv $TMP_FILE ${DATA_DIR}${QC_FILE}
 PED_FILE="${RESULTS_DIR}${GWAS_DATA}.chr${CHR}.imputed.ped"
 MAP_FILE="${RESULTS_DIR}${GWAS_DATA}.chr${CHR}.imputed.map"
 
-echo "$GTOOL_EXEC -G --g ${DATA_DIR}${QC_FILE} --s ${DATA_DIR}${SAMPLE_FILE} --ped ${DATA_DIR}${PED_FILE} --map ${DATA_DIR}${MAP_FILE} --phenotype plink_pheno"
-echo
-
 echo "Converting gen/sample format to ped/map..."
 echo
 time $GTOOL_EXEC -G \
@@ -104,4 +101,4 @@ echo
 aws s3 cp \
     ${DATA_DIR}${RESULTS_DIR} \
     ${S3_BUCKET}${RESULTS_DIR} \
-    --recursive --exclude "*" --include "*chr${CHR}*"
+    --recursive --exclude "*" --include "*chr${CHR}.*"
