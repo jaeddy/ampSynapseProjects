@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 echo ""
 
@@ -20,23 +20,23 @@ for CHR in $(seq 1 22); do
 
         CHUNK_START=$(awk -v i=$INT '$3==i {print $5}' $INTS_FILE)
         CHUNK_END=$(awk -v i=$INT '$3==i {print $6}' $INTS_FILE)
-        
+
         PREV_INTS_FILE="${GWAS_DIR}impute_intervals/already_run.txt"
         if [ ! -e "$PREV_INTS_FILE" ]; then
             touch "$PREV_INTS_FILE"
         fi
         echo $PREV_INTS_FILE
-        
+
         INT_CHECK=chr${CHR}_${CHUNK_START}-${CHUNK_END}
         echo $INT_CHECK
         if ! grep -q $INT_CHECK $PREV_INTS_FILE; then
-            qsub -V -M james.a.eddy@gmail.com -m abe \
-            -N chr${CHR}int${INT}_${CHUNK_START}-${CHUNK_END} -j y \
-            -cwd ./impute.sh $GWAS_DATA $CHR $CHUNK_START $CHUNK_END ;
+            qsub -S /bin/bash -V -cwd -M james.a.eddy@gmail.com -m abe -j y \
+                -N impute_chr${CHR}_int${INT}${CHUNK_START}-${CHUNK_END} \
+                shell/impute.sh $GWAS_DATA $CHR $CHUNK_START $CHUNK_END ;
         else
             echo "previously run interval $INT_CHECK"
-        fi     
-    
+        fi
+
     done
-    
+
 done
