@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # assign inputs
 GWAS_DATA="$1"
@@ -35,7 +35,7 @@ GENMAP_FILE=${REFHAPS_DIR}genetic_map_chr${CHR}_combined_b37.txt
 
 RESULT_FILE="${GWAS_DATA}.chr${CHR}.pos${CHUNK_START}-${CHUNK_END}.imputed"
 
-# impute estimated haplotype files with impute2 and save to results directory        
+# impute estimated haplotype files with impute2 and save to results directory
 $IMPUTE_EXEC \
     -use_prephased_g \
     -m $GENMAP_FILE \

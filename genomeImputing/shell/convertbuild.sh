@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # assign inputs
 GWAS_DATA="$1"
@@ -28,5 +28,5 @@ python \
     -m $MAP_FILE \
     -p $PED_FILE \
     -o $RESULT_FILE ;
-    
+
 mv *.chr${CHR}.b37* "$RESULTS_DIR"

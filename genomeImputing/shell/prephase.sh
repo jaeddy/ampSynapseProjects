@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # assign inputs
 GWAS_DATA="$1"
@@ -28,7 +28,7 @@ RESULT_FILE=${GWAS_DATA}.chr${CHR}.phased
 
 echo "$GWAS_FILE"
 
-# prephase preprocessed binary genotype files with shapeit, with specified 
+# prephase preprocessed binary genotype files with shapeit, with specified
 # reference map & store in results directory
 $SHAPEIT_EXEC \
 	--input-ped $GWAS_FILE \
@@ -37,6 +37,5 @@ $SHAPEIT_EXEC \
 	--seed 367946 \
 	--output-log ${RESULT_FILE}.log \
 	--output-max ${RESULT_FILE}.haps ${RESULT_FILE}.sample ;
-	
-mv *.chr${CHR}.phased* "$RESULTS_DIR"
 
+mv *.chr${CHR}.phased* "$RESULTS_DIR"

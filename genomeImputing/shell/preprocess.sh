@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # assign inputs
 GWAS_DATA="$1"
@@ -23,7 +23,7 @@ PLINK_EXEC=${ROOT_DIR}resources/plink/plink
 GWAS_FILE=${GWAS_DIR}${GWAS_DATA}
 RESULT_FILE=${GWAS_DATA}.chr${CHR}
 
-# reprocess binary files with plink & store in results directory			
+# reprocess binary files with plink & store in results directory
 $PLINK_EXEC \
 	--bfile $GWAS_FILE \
 	--chr $CHR \
@@ -33,6 +33,5 @@ $PLINK_EXEC \
 	--hwe 0.001 \
 	--mind 0.02 \
 	--out $RESULT_FILE ;
-	
-mv *.chr${CHR}* "$RESULTS_DIR"      
 
+mv *.chr${CHR}* "$RESULTS_DIR"
