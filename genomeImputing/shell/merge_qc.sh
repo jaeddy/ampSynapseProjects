@@ -13,7 +13,6 @@ if [ ! -e "$DATA_DIR" ]; then
     mkdir "$DATA_DIR"
 fi
 
-
 GWAS_DIR=gwas_results/
 GENMAP_DIR=haplotypes/
 GWAS_IMP_DIR=${GWAS_DIR}${GWAS_DATA}.imputed/
@@ -27,7 +26,6 @@ QCTOOL_EXEC=${ROOT_DIR}resources/qctool/qctool
 SAMPLE_FILE=${GWAS_HAP_DIR}${GWAS_DATA}.chr${CHR}.phased.sample
 
 # copy data from S3 bucket
-
 echo "Downloading data from S3..."
 
 aws s3 cp \
@@ -95,7 +93,6 @@ paste <(cut -f 1-2 ${DATA_DIR}${PED_FILE} \
 mv $TMP_FILE ${DATA_DIR}${PED_FILE}
 
 # copy qc'd files to S3
-
 echo "Uploading results to S3..."
 echo
 aws s3 cp \
