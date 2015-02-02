@@ -35,11 +35,11 @@ aws s3 cp \
 aws s3 cp \
    ${S3_BUCKET}${GWAS_IMP_DIR} \
    ${DATA_DIR}${GWAS_IMP_DIR} \
-   --recursive --exclude "*" --include "*chr${CHR}*.imputed"
+   --recursive --exclude "*" --include "*chr${CHR}.*.imputed"
 
 # get list of imputed genotype files for chromosome
-CHUNK_LIST=$(ls -d -1 ${DATA_DIR}${GWAS_IMP_DIR}*.* \
-   | grep "chr${CHR}.*.imputed$")
+CHUNK_LIST=$(find ${DATA_DIR}${GWAS_IMP_DIR} \
+   | grep "chr${CHR}\..*imputed$")
 
 # merge all imputed genotype files for chromosome
 GEN_FILE="${DATA_DIR}${GWAS_IMP_DIR}${GWAS_DATA}.chr${CHR}.imputed.gen"
