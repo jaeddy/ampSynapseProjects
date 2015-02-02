@@ -6,36 +6,36 @@ echo ""
 GWAS_DATA=SYounkin_MayoGWAS_09-05-08
 
 # directories
-ROOT_DIR=./
-DATA_DIR=${ROOT_DIR}data/
-GWAS_DIR=${DATA_DIR}gwas_results/${GWAS_DATA}.b37/
+S3_BUCKET=s3://mayo-gwas-impute/
+# DATA_DIR=/mnt/data/
+DATA_DIR="data/"
+
+if [ ! -e "$DATA_DIR" ]; then
+    mkdir "$DATA_DIR"
+fi
+
+GWAS_DIR=gwas_results/${GWAS_DATA}.b37/
+INTS_DIR=${GWAS_DIR}impute_intervals/
 
 for CHR in $(seq 1 22); do
 
-    NUM_FILE="${GWAS_DIR}impute_intervals/num_ints.txt"
-    NUM_INTS=$(awk -v chr=$CHR '$2==chr {print $3}' $NUM_FILE)
-    INTS_FILE="${GWAS_DIR}impute_intervals/chr${CHR}.ints"
+    INTS_FILE="${INTS_DIR}chr${CHR}.ints"
+
+    # get impute interval ranges from S3
+    aws s3 cp \
+        ${S3_BUCKET}${INTS_FILE} \
+        ${DATA_DIR}${INTS_FILE}
+
+    NUM_INTS=$(expr $(wc -l ${DATA_DIR}${INTS_FILE} | awk '{print $1}') - 1)
 
     for INT in $(seq 1 $NUM_INTS); do
 
         CHUNK_START=$(awk -v i=$INT '$3==i {print $5}' $INTS_FILE)
         CHUNK_END=$(awk -v i=$INT '$3==i {print $6}' $INTS_FILE)
 
-        PREV_INTS_FILE="${GWAS_DIR}impute_intervals/already_run.txt"
-        if [ ! -e "$PREV_INTS_FILE" ]; then
-            touch "$PREV_INTS_FILE"
-        fi
-        echo $PREV_INTS_FILE
-
-        INT_CHECK=chr${CHR}_${CHUNK_START}-${CHUNK_END}
-        echo $INT_CHECK
-        if ! grep -q $INT_CHECK $PREV_INTS_FILE; then
-            qsub -S /bin/bash -V -cwd -M james.a.eddy@gmail.com -m abe -j y \
-                -N impute_chr${CHR}_int${INT}${CHUNK_START}-${CHUNK_END} \
-                shell/impute.sh $GWAS_DATA $CHR $CHUNK_START $CHUNK_END ;
-        else
-            echo "previously run interval $INT_CHECK"
-        fi
+        qsub -S /bin/bash -V -cwd -M james.a.eddy@gmail.com -m abe -j y \
+            -N impute_chr${CHR}_int${INT}${CHUNK_START}-${CHUNK_END} \
+            shell/impute.sh $GWAS_DATA $CHR $CHUNK_START $CHUNK_END ;
 
     done
 
