@@ -1,5 +1,9 @@
 !#/bin/bash
 
+# assign inputs
+GWAS_DATA="$1"
+CHR="$2"
+
 # directories
 S3_BUCKET=s3://mayo-gwas-impute/
 ROOT_DIR=./
