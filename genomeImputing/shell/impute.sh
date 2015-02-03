@@ -16,6 +16,11 @@ if [ ! -e "$DATA_DIR" ]; then
 fi
 
 GWAS_DIR=gwas_results/
+
+if [ ! -e "$DATA_DIR$GWAS_DIR" ]; then
+    mkdir "$DATA_DIR$GWAS_DIR"
+fi
+
 HAPS_DIR=haplotypes/
 REFHAPS_DIR=${HAPS_DIR}1000genomes/
 GWAS_HAPS_DIR=${HAPS_DIR}${GWAS_DATA}.phased/
@@ -25,13 +30,6 @@ HAP_PREFIX=".integrated_phase1_v3.20101123.snps_indels_svs.genotypes.nosing."
 
 # executables
 IMPUTE_EXEC=${ROOT_DIR}resources/impute2/impute2
-
-# create new directory to store results
-RESULTS_DIR=${GWAS_DIR}${GWAS_DATA}.imputed/
-
-if [ ! -e "${DATA_DIR}${RESULTS_DIR}" ]; then
-    mkdir "${DATA_DIR}${RESULTS_DIR}"
-fi
 
 # specify data files
 GWAS_HAPS_FILE=${GWAS_HAPS_DIR}${GWAS_DATA}.chr${CHR}.phased.haps
@@ -44,22 +42,30 @@ echo "Downloading data from S3..."
 # get pre-phased data
 aws s3 cp --dryrun \
     ${S3_BUCKET}${GWAS_HAPS_FILE} \
-    ${DATA_DIR}${GWAS_HAPS_FILE}
+    ${DATA_DIR}${GWAS_HAPS_DIR}
 
 # get reference data
 aws s3 cp --dryrun \
-    ${S3_BUCKET}${HAPS_FILE}
-    ${DATA_DIR}${HAPS_FILE}
+    ${S3_BUCKET}${HAPS_FILE} \
+    ${DATA_DIR}${REFHAPS_DIR}
 
 aws s3 cp --dryrun \
-    ${S3_BUCKET}${LEGEND_FILE}
-    ${DATA_DIR}${LEGEND_FILE}
+    ${S3_BUCKET}${LEGEND_FILE} \
+    ${DATA_DIR}${REFHAPS_DIR}
 
 aws s3 cp --dryrun \
-    ${S3_BUCKET}${MAP_FILE}
-    ${DATA_DIR}${MAP_FILE}
+    ${S3_BUCKET}${MAP_FILE} \
+    ${DATA_DIR}${REFHAPS_DIR}
 
-RESULT_FILE="${GWAS_DATA}.chr${CHR}.pos${CHUNK_START}-${CHUNK_END}.imputed"
+# create new directory to store results
+RESULTS_DIR=${GWAS_DIR}${GWAS_DATA}.imputed/
+
+if [ ! -e "${DATA_DIR}${RESULTS_DIR}" ]; then
+    mkdir "${DATA_DIR}${RESULTS_DIR}"
+fi
+
+RESULT_FILE="${RESULTS_DIR}${GWAS_DATA}.chr${CHR}.pos${CHUNK_START}-${CHUNK_END}.imputed"
+echo $RESULT_FILE
 
 # impute estimated haplotype files with impute2 and save to results directory
 echo "Reprocessing genotype data for chromosome ${CHR}..."
