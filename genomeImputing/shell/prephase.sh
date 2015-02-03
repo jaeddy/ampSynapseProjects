@@ -29,7 +29,7 @@ echo "Downloading data from S3..."
 aws s3 cp \
     ${S3_BUCKET}${GWAS_DIR} \
     ${DATA_DIR}${GWAS_DIR} \
-    --recursive --exclude "*" --include "chr${CHR}.*"
+    --recursive --exclude "*" --include "*chr${CHR}.*"
 
 aws s3 cp \
     ${S3_BUCKET}${MAP_FILE} \
