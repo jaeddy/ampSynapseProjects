@@ -20,7 +20,7 @@ GWAS_DIR=${DATA_DIR}gwas_results/
 # fi
 #
 # GWAS_DIR=gwas_results/
-# 
+#
 # # executables
 # PLINK_EXEC=${ROOT_DIR}resources/plink/plink
 #
@@ -80,7 +80,7 @@ GWAS_FILE=${GWAS_DIR}${GWAS_DATA}
 RESULT_FILE=${GWAS_DATA}.chr${CHR}
 
 # reprocess binary files with plink & store in results directory
-$PLINK_EXEC \
+time $PLINK_EXEC \
 	--bfile $GWAS_FILE \
 	--chr $CHR \
 	--recode \

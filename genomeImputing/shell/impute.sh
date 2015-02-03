@@ -70,7 +70,7 @@ echo $RESULT_FILE
 # impute estimated haplotype files with impute2 and save to results directory
 echo "Reprocessing genotype data for chromosome ${CHR}..."
 echo
-$IMPUTE_EXEC \
+time $IMPUTE_EXEC \
     -use_prephased_g \
     -m ${DATA_DIR}${MAP_FILE} \
     -h ${DATA_DIR}${HAPS_FILE} \

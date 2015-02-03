@@ -19,6 +19,7 @@ REFHAPS_DIR=${HAPS_DIR}1000genomes/
 
 # executables
 SHAPEIT_EXEC=${ROOT_DIR}resources/shapeit/shapeit
+PLINK_EXEC=${ROOT_DIR}resources/plink/plink
 
 # specify data files
 GWAS_HANDLE=${GWAS_DIR}${GWAS_DATA}.chr${CHR}.b37
@@ -44,11 +45,21 @@ fi
 
 RESULT_FILE=${DATA_DIR}${RESULTS_DIR}${GWAS_DATA}.chr${CHR}.phased
 
+# need to make sure that SNP data is ordered by position; use PLINK for this
+echo "Reordering genotype data for chromosome ${CHR}..."
+echo
+GWAS_HANDLE_ORDERED=${GWAS_HANDLE}.ordered
+time $PLINK_EXEC \
+    --file ${DATA_DIR}${GWAS_HANDLE} \
+    --recode
+    --out ${DATA_DIR}${GWAS_HANDLE_ORDERED}
+
+
 # prephase preprocessed binary genotype files with shapeit, with specified
 # reference map & store in results directory
-echo "Reprocessing genotype data for chromosome ${CHR}..."
+echo "Pre-phasing data for chromosome ${CHR}..."
 echo
-$SHAPEIT_EXEC \
+time $SHAPEIT_EXEC \
     --input-ped ${DATA_DIR}${GWAS_HANDLE} \
     --input-map ${DATA_DIR}${MAP_FILE} \
     --effective-size 11418 \
