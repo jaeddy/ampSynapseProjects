@@ -5,8 +5,7 @@ GWAS_DATA=SYounkin_MayoGWAS_09-05-08
 
 # directories
 S3_BUCKET=s3://mayo-gwas-impute/
-# DATA_DIR=/mnt/data/
-DATA_DIR="data/"
+DATA_DIR=/mnt/data/
 
 if [ ! -e "$DATA_DIR" ]; then
     mkdir "$DATA_DIR"
@@ -26,7 +25,7 @@ for CHR in $(seq 1 22); do
 
     INTS_FILE="${INTS_DIR}chr${CHR}.ints"
 
-    get impute interval ranges from S3
+    # get impute interval ranges from S3
     aws s3 cp \
         ${S3_BUCKET}${INTS_FILE} \
         ${DATA_DIR}${INTS_FILE}

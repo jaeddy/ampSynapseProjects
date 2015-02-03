@@ -70,26 +70,26 @@ echo $RESULT_FILE
 # impute estimated haplotype files with impute2 and save to results directory
 echo "Reprocessing genotype data for chromosome ${CHR}..."
 echo
-# $IMPUTE_EXEC \
-#     -use_prephased_g \
-#     -m ${DATA_DIR}${MAP_FILE} \
-#     -h ${DATA_DIR}${HAPS_FILE} \
-#     -l ${DATA_DIR}${LEGEND_FILE} \
-#     -known_haps_g ${DATA_DIR}${GWAS_HAPS_FILE} \
-#     -iter 30 \
-#     -burnin 10 \
-#     -k 80 \
-#     -k_hap 500 \
-#     -Ne 20000 \
-#     -int $CHUNK_START $CHUNK_END \
-#     -allow_large_regions \
-#     -filt_rules_l 'eur.maf==0' \
-#     -o ${DATA_DIR}${RESULT_FILE} ;
+$IMPUTE_EXEC \
+    -use_prephased_g \
+    -m ${DATA_DIR}${MAP_FILE} \
+    -h ${DATA_DIR}${HAPS_FILE} \
+    -l ${DATA_DIR}${LEGEND_FILE} \
+    -known_haps_g ${DATA_DIR}${GWAS_HAPS_FILE} \
+    -iter 30 \
+    -burnin 10 \
+    -k 80 \
+    -k_hap 500 \
+    -Ne 20000 \
+    -int $CHUNK_START $CHUNK_END \
+    -allow_large_regions \
+    -filt_rules_l 'eur.maf==0' \
+    -o ${DATA_DIR}${RESULT_FILE} ;
 
 # copy chr-specific files to S3
 echo "Uploading results to S3..."
 echo
-# aws s3 cp \
-#     ${DATA_DIR}${RESULTS_DIR} \
-#     ${S3_BUCKET}${RESULTS_DIR} \
-#     --recursive --exclude "*" --include "*chr${CHR}.*"
+aws s3 cp \
+    ${DATA_DIR}${RESULTS_DIR} \
+    ${S3_BUCKET}${RESULTS_DIR} \
+    --recursive --exclude "*" --include "*chr${CHR}.*"
