@@ -40,20 +40,20 @@ MAP_FILE=${REFHAPS_DIR}genetic_map_chr${CHR}_combined_b37.txt
 # copy data from S3 bucket
 echo "Downloading data from S3..."
 # get pre-phased data
-aws s3 cp --dryrun \
+aws s3 cp \
     ${S3_BUCKET}${GWAS_HAPS_FILE} \
     ${DATA_DIR}${GWAS_HAPS_DIR}
 
 # get reference data
-aws s3 cp --dryrun \
+aws s3 cp \
     ${S3_BUCKET}${HAPS_FILE} \
     ${DATA_DIR}${REFHAPS_DIR}
 
-aws s3 cp --dryrun \
+aws s3 cp \
     ${S3_BUCKET}${LEGEND_FILE} \
     ${DATA_DIR}${REFHAPS_DIR}
 
-aws s3 cp --dryrun \
+aws s3 cp \
     ${S3_BUCKET}${MAP_FILE} \
     ${DATA_DIR}${REFHAPS_DIR}
 
