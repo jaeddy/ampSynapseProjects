@@ -13,13 +13,13 @@
 # 
 # filePath <- create_merged_file(dir, countType, prefix)
 
-countTypes <- c("gene_name", "gene_id",
-                "junction_name", "junction_id",
-                "transcript_name", "transcript_id")
+countTypes <- c("gene_name", "gene_id", "transcript_id")
 
 create_merged_file <- function(dir = "", countType = countTypes, prefix = "") {
     
     fileList <- list.files(dir, pattern = countType, recursive = TRUE)
+    # ignore any .gz files
+    fileList <- fileList[!grepl(".gz", fileList)]
 
     message("Merging input files...")
     sample <- character(length(fileList))
