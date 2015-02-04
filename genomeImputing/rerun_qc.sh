@@ -21,6 +21,7 @@ get_chr <(aws s3 ls ${S3_BUCKET}$QC_DIR} \
     | uniq \
     | while read CHR; do
 
+        echo "$CHR"
         qsub -S /bin/bash -V -cwd -M james.a.eddy@gmail.com -m abe -j y \
             -N re_merge_qc_chr${CHR} \
             shell/merge_qc.sh $GWAS_DATA $CHR ;
