@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#synapse login
+#synapse get syn3131609
 
 DATA_DIR="/Users/jaeddy/data/projects/ampSynapseProjects/"
 DASL_DIR="${DATA_DIR}mayo-egwas-dasl/"
