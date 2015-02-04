@@ -51,7 +51,7 @@ echo
 GWAS_HANDLE_ORDERED=${GWAS_HANDLE}.ordered
 time $PLINK_EXEC \
     --file ${DATA_DIR}${GWAS_HANDLE} \
-    --recode
+    --recode \
     --out ${DATA_DIR}${GWAS_HANDLE_ORDERED}
 
 
@@ -60,7 +60,7 @@ time $PLINK_EXEC \
 echo "Pre-phasing data for chromosome ${CHR}..."
 echo
 time $SHAPEIT_EXEC \
-    --input-ped ${DATA_DIR}${GWAS_HANDLE} \
+    --input-ped ${DATA_DIR}${GWAS_HANDLE_ORDERED} \
     --input-map ${DATA_DIR}${MAP_FILE} \
     --effective-size 11418 \
     --seed 367946 \
