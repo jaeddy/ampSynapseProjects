@@ -30,15 +30,18 @@ build_relationship <- function (activity_name, input_files, code_files,
                                             wasExecuted = F)))
     }
     
-    # Add code files to 'used' list
-    activity_inputs <- append(activity_inputs, code_files)
+    # Add wasExecuted tag to code file list & append to 'used' list
+    for (code_file in code_files) {
+        code_file$wasExecuted <- T
+        activity_inputs <- append(activity_inputs, list(code_file))
+    }
     
     # Build Activity object to represent provenance relationship
     activity <- Activity(name = activity_name,
                          used = activity_inputs,
                          description = description)
     activity <- storeEntity(activity)
-    
+
     # Associate output files with activity
     for (output_file in output_files) {
         output_object <- synGet(output_file, downloadFile = F)
