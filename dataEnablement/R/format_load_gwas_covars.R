@@ -1,3 +1,7 @@
+
+# This script is used to extract and reformat clinical variables for the Mayo
+# LOAD GWAS study (originally in an Excel spreadsheet).
+
 library(synapseClient)
 library(xlsx)
 library(dplyr)

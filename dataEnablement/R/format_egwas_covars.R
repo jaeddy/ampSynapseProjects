@@ -1,8 +1,24 @@
 
-egwas_dir <- "~/data/projects/ampSynapseProjects/mayo-egwas-dasl/"
-system(paste("ls", egwas_dir))
+# This script is used to extract clinical variables from the Mayo eGWAS DASL
+# dataset and format to match the AMP consortium template.
 
-cer_dasl_path <- file.path(egwas_dir, "CER-All-343_2014-10-08.txt")
+library(synapseClient)
+library(dplyr)
+
+# Login to Synapse using credentials saved in .synapseConfig file
+synapseLogin()
+
+### Cerebellum data ###
+#######################
+
+# Define paths for required Synapse objects
+cer_dasl_id <- "syn3131609" # cerebellar DASL data
+folder_id <- "syn2866150" # id of destination folder
+
+# Download files from Synapse
+cer_dasl_file <- synGet(cer_dasl_id)
+cer_dasl_path <- getFileLocation(cer_dasl_file)
+
 tmp <- tempfile()
 system(sprintf("cut -f 1-13 %s > %s", cer_dasl_path, tmp))
 cer_covars <- read.table(tmp, sep = "\t", header = TRUE)
@@ -22,8 +38,6 @@ headers <- c("participant_id", "age_at_onset", "age_at_last_assessment",
              "age_at_death", "post_mortem_interval", "sex", "education",
              "apoe_genotype", "race_ethnicity", "braak_stage", "mmse_at_onset",
              "mmse_at_last_assessment", "cerad")
-
-names(cer_covars)
 
 cer_clinical <- cer_covars %>%
     # pull out relevant variables from original data frame
@@ -49,15 +63,60 @@ cer_clinical <- cer_covars %>%
     # reorder variables to match template column order
     select(one_of(headers))
 
-cer_technical <- cer_covars %>%
+# Save to file
+out_path <- file.path(tempdir(), "mayo_egwas_cer_clinical_vars.txt")
+write.table(cer_clinical, out_path, quote = FALSE, row.names = FALSE)
+
+# Create a Synapse object for the output file and upload
+cer_clinical_object <- File(path = out_path, 
+                             parentId = folder_id)
+cer_clinical_object <- synStore(cer_clinical_object)
+
+### Temporal cortex data ###
+############################
+
+# Define paths for required Synapse objects
+tcx_dasl_id <- "syn3131612" # cerebellar DASL data
+folder_id <- "syn2866150" # id of destination folder
+
+# Download files from Synapse
+tcx_dasl_file <- synGet(tcx_dasl_id)
+tcx_dasl_path <- getFileLocation(tcx_dasl_file)
+
+tmp <- tempfile()
+system(sprintf("cut -f 1-13 %s > %s", tcx_dasl_path, tmp))
+tcx_covars <- read.table(tmp, sep = "\t", header = TRUE)
+unlink(tmp)
+
+tcx_clinical <- tcx_covars %>%
     # pull out relevant variables from original data frame
-    select(IID = IID.of.CER_ALL, plate0, plate1, plate2, plate3, plate4,
-           RIN, RINsqAdj)
+    select(participant_id = IID, age_at_diagnosis = Age, 
+           sex = Sex, E4dose) %>%
+    
+    # rename and modify variables to match template
+    mutate(age_at_last_assessment = as.numeric(age_at_diagnosis),
+           sex = ifelse(sex == 1, "M", "F"),
+           apoe_genotype = recode_apoe_status(E4dose)) %>%
+    
+    # add empty columns for additional template variables
+    mutate(age_at_onset = NA,
+           age_at_death = NA,
+           post_mortem_interval = NA,
+           education = NA,
+           race_ethnicity = NA,
+           braak_stage = NA,
+           mmse_at_onset = NA,
+           mmse_at_last_assessment = NA,
+           cerad = NA) %>%
+    
+    # reorder variables to match template column order
+    select(one_of(headers))
 
-# Move these steps to a shell script
+# Save to file
+out_path <- file.path(tempdir(), "mayo_egwas_tcx_clinical_vars.txt")
+write.table(tcx_clinical, out_path, quote = FALSE, row.names = FALSE)
 
-# tmp <- tempfile()
-# system(sprintf("paste <(cut -f 1 %s) <(cut -f 14- %s) > %s", 
-#                cer_dasl_path, cer_dasl_path, tmp))
-# cer_covars <- read.table(tmp, sep = "\t", header = TRUE)
-# unlink(tmp)
+# Create a Synapse object for the output file and upload
+tcx_clinical_object <- File(path = out_path, 
+                            parentId = folder_id)
+tcx_clinical_object <- synStore(tcx_clinical_object)

@@ -1,8 +1,9 @@
-library(xlsx)
 
 # This script is used to exctract individual sheets from an Excel workbook and
 # save each as a separate tab-delimited text file (with appropriate extensions
 # for PLINK genotype files).
+
+library(xlsx)
 
 dataDirectory <- "~/Dropbox/data/projects/ampSynapseProjects"
 excelFile <- file.path(dataDirectory, "TLR4-5_12-05-14_ForUpload.xlsx")
