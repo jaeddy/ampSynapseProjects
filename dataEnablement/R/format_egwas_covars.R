@@ -46,7 +46,7 @@ cer_clinical <- cer_covars %>%
     
     # rename and modify variables to match template
     mutate(age_at_last_assessment = as.numeric(age_at_diagnosis),
-           sex = ifelse(sex == 1, "M", "F"),
+           sex = ifelse(sex == 0, "M", "F"),
            apoe_genotype = recode_apoe_status(E4dose)) %>%
     
     # add empty columns for additional template variables
@@ -95,7 +95,7 @@ tcx_clinical <- tcx_covars %>%
     
     # rename and modify variables to match template
     mutate(age_at_last_assessment = as.numeric(age_at_diagnosis),
-           sex = ifelse(sex == 1, "M", "F"),
+           sex = ifelse(sex == 0, "M", "F"),
            apoe_genotype = recode_apoe_status(E4dose)) %>%
     
     # add empty columns for additional template variables
