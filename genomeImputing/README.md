@@ -1,5 +1,6 @@
 ## GWAS Genotype Imputation
 
+*Note: this README is old and needs to be updated.*
 
 ### Directory structure
 
