@@ -17,9 +17,9 @@ nano_sample_groups <- nano_sample_groups %>%
            age = V3,
            group = V5) %>%
     
-    mutate(is_TG = ifelse(group %in% c("Tg IL10", "Tg control", "CRND8"), 1, 0),
+    mutate(is_TG = ifelse(group %in% c("Tg IL10", "Tg control ", "CRND8"), 1, 0),
            is_treated = ifelse(group %in% c("Tg IL10", "WT IL10"), 1, 0),
-           is_old = ifelse(group %in% c("CRND8", "nTg control"), 1, 0))
+           is_old = ifelse(group %in% c("CRND8", "Ntg control"), 1, 0))
 
 nano_sample_groups$age[nano_sample_groups$age == "6month"] <- "6mo"
 
